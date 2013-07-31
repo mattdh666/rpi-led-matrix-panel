@@ -12,7 +12,6 @@
 // for a 64x64 matrix), columns 1 to 64 are Left to Right across the top two
 // boards, but columns 65 to 127 are backwards Right to Left across the bottom
 // two boards. (Referenced by: ColumnCnt)
-//
 
  
 #ifndef RPI_RGBMATRIX_H
@@ -20,6 +19,7 @@
 
 #include <stdint.h>
 #include "GpioProxy.h"
+
 
 class RgbMatrix
 {
@@ -55,10 +55,17 @@ class RgbMatrix
 
   //Drawing functions
   void drawPixel(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue);
-/*
+
   void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1,
                 uint8_t red, uint8_t green, uint8_t blue);
-*//*
+
+  void drawVLine(uint8_t x, uint8_t y, uint8_t h,
+                 uint8_t red, uint8_t green, uint8_t blue);
+
+  void drawHLine(uint8_t x, uint8_t y, uint8_t w,
+                 uint8_t red, uint8_t green, uint8_t blue);
+
+/*
   void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
                 uint8_t red, uint8_t green, uint8_t blue);
 *//*
@@ -69,6 +76,10 @@ class RgbMatrix
 
   void drawCircle(uint8_t x, uint8_t y, uint8_t r,
                   uint8_t red, uint8_t green, uint8_t blue);
+
+  void fillCircle(uint8_t x, uint8_t y, uint8_t r,
+                  uint8_t red, uint8_t green, uint8_t blue);
+
 
 private:
   GpioProxy *const _gpio;

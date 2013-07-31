@@ -10,6 +10,7 @@
 
 #include "RgbMatrix.h"
 
+#include <algorithm>
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -207,6 +208,76 @@ void RgbMatrix::drawPixel(uint8_t x, uint8_t y,
 }
 
 
+// Bresenham's Line Algorithm
+void RgbMatrix::drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1,
+                         uint8_t red, uint8_t green, uint8_t blue)
+{
+  int16_t steep = abs(y1 - y0) > abs(x1 - x0);
+
+  if (steep)
+  {
+    std::swap(x0, y0);
+    std::swap(x1, y1);
+  }
+
+  if (x0 > x1)
+  {
+    std::swap(x0, x1);
+    std::swap(y0, y1);
+  }
+
+  int16_t dx, dy;
+  dx = x1 - x0;
+  dy = abs(y1 - y0);
+
+  int16_t err = dx / 2;
+  int16_t ystep;
+
+  if (y0 < y1)
+  {
+    ystep = 1;
+  }
+  else
+  {
+    ystep = -1;
+  }
+
+  for (; x0 <= x1; x0++)
+  {
+    if (steep)
+    {
+      drawPixel(y0, x0, red, green, blue);
+    }
+    else
+    {
+      drawPixel(x0, y0, red, green, blue);
+    }
+
+    err -= dy;
+
+    if (err < 0)
+    {
+      y0 += ystep;
+      err += dx;
+    }
+  }
+}
+
+
+// Draw a vertical line
+void RgbMatrix::drawVLine(uint8_t x, uint8_t y, uint8_t h,
+                          uint8_t red, uint8_t green, uint8_t blue)
+{
+}
+
+// Draw a horizontal line
+void RgbMatrix::drawHLine(uint8_t x, uint8_t y, uint8_t w,
+                          uint8_t red, uint8_t green, uint8_t blue)
+{
+}
+
+
+
 void RgbMatrix::fillScreen(uint8_t red, uint8_t green, uint8_t blue)
 {
   for (int x = 0; x < Width; ++x)
@@ -219,7 +290,7 @@ void RgbMatrix::fillScreen(uint8_t red, uint8_t green, uint8_t blue)
 }
 
 
-// Draw the outline of a cirle (no fill)
+// Draw the outline of a cirle (no fill) - Midpoint Circle Algorithm
 void RgbMatrix::drawCircle(uint8_t x, uint8_t y, uint8_t r,
                            uint8_t red, uint8_t green, uint8_t blue)
 {
@@ -229,10 +300,10 @@ void RgbMatrix::drawCircle(uint8_t x, uint8_t y, uint8_t r,
   int16_t x1 = 0;
   int16_t y1 = r;
 
-  drawPixel(x, y+r, red, green, blue);
-  drawPixel(x, y-r, red, green, blue);
-  drawPixel(x+r, y, red, green, blue);
-  drawPixel(x-r, y, red, green, blue);
+  drawPixel(x, y + r, red, green, blue);
+  drawPixel(x, y - r, red, green, blue);
+  drawPixel(x + r, y, red, green, blue);
+  drawPixel(x - r, y, red, green, blue);
 
   while (x1 < y1)
   {
