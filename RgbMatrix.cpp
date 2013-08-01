@@ -5,9 +5,6 @@
 // This class is for controlling a 32x32 RGB LED Matrix panel using
 // the Raspberry Pi GPIO.
 //
-// Buy a 32x32 RGB LED Matrix from Adafruit!
-//   http://www.adafruit.com/products/607
-//
 // This code is based on a cool example found at:
 //   https://github.com/hzeller/rpi-rgb-led-matrix
 
@@ -282,6 +279,7 @@ void RgbMatrix::drawHLine(uint8_t x, uint8_t y, uint8_t w,
 }
 
 
+// Draw the outline of a rectangle (no fill)
 void RgbMatrix::drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
                          uint8_t red, uint8_t green, uint8_t blue)
 {
@@ -305,6 +303,32 @@ void RgbMatrix::fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
 void RgbMatrix::fillScreen(uint8_t red, uint8_t green, uint8_t blue)
 {
   fillRect(0, 0, Width, Height, red, green, blue);
+}
+
+
+// Draw a rounded rectangle with radius r.
+void RgbMatrix::drawRoundRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t r,
+                              uint8_t red, uint8_t green, uint8_t blue)
+{
+  drawHLine(x + r    , y        , w - 2 * r, red, green, blue);
+  drawHLine(x + r    , y + h - 1, w - 2 * r, red, green, blue);
+  drawVLine(x        , y + r    , h - 2 * r, red, green, blue);
+  drawVLine(x + w - 1, y + r    , h - 2 * r, red, green, blue);
+
+  drawCircleQuadrant(x + r        , y + r        , r, 1, red, green, blue);
+  drawCircleQuadrant(x + w - r - 1, y + r        , r, 2, red, green, blue);
+  drawCircleQuadrant(x + w - r - 1, y + h - r - 1, r, 4, red, green, blue);
+  drawCircleQuadrant(x + r        , y + h - r - 1, r, 8, red, green, blue);
+}
+
+
+void RgbMatrix::fillRoundRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t r,
+                              uint8_t red, uint8_t green, uint8_t blue)
+{
+  fillRect(x + r, y, w - 2 * r, h, red, green, blue);
+
+  fillCircleHalf(x + r        , y + r, r, 1, h - 2 * r - 1, red, green, blue);
+  fillCircleHalf(x + w - r - 1, y + r, r, 2, h - 2 * r - 1, red, green, blue);
 }
 
 
@@ -347,3 +371,106 @@ void RgbMatrix::drawCircle(uint8_t x, uint8_t y, uint8_t r,
   }
 }
 
+// Draw one of the four quadrants of a circle.
+void RgbMatrix::drawCircleQuadrant(uint8_t x, uint8_t y, uint8_t r, uint8_t quadrant,
+                                   uint8_t red, uint8_t green, uint8_t blue)
+{
+  int16_t f = 1 - r;
+  int16_t ddFx = 1;
+  int16_t ddFy = -2 * r;
+  int16_t x1 = 0;
+  int16_t y1 = r;
+
+  while (x1 < y1)
+  {
+    if (f >= 0)
+    {
+      y1--;
+      ddFy += 2;
+      f += ddFy;
+    }
+
+    x1++;
+    ddFx += 2;
+    f += ddFx;
+
+    //Upper Left
+    if (quadrant & 0x1)
+    {
+      drawPixel(x - y1, y - x1, red, green, blue);
+      drawPixel(x - x1, y - y1, red, green, blue);
+    }
+
+    //Upper Right
+    if (quadrant & 0x2)
+    {
+      drawPixel(x + x1, y - y1, red, green, blue);
+      drawPixel(x + y1, y - x1, red, green, blue);
+    }
+
+    //Lower Right
+    if (quadrant & 0x4)
+    {
+      drawPixel(x + x1, y + y1, red, green, blue);
+      drawPixel(x + y1, y + x1, red, green, blue);
+    }
+
+    //Lower Left
+    if (quadrant & 0x8)
+    {
+      drawPixel(x - y1, y + x1, red, green, blue);
+      drawPixel(x - x1, y + y1, red, green, blue);
+    } 
+  }
+}
+
+
+void RgbMatrix::fillCircle(uint8_t x, uint8_t y, uint8_t r,
+                           uint8_t red, uint8_t green, uint8_t blue)
+{
+  drawVLine(x, y - r, 2 * r + 1, red, green, blue);
+  fillCircleHalf(x, y, r, 3, 0, red, green, blue);
+}
+
+
+void RgbMatrix::fillCircleHalf(uint8_t x, uint8_t y, uint8_t r,
+                               uint8_t half, uint8_t stretch,
+                               uint8_t red, uint8_t green, uint8_t blue)
+{
+  int16_t f = 1 - r;
+  int16_t ddFx = 1;
+  int16_t ddFy = -2 * r;
+  int16_t x1 = 0;
+  int16_t y1 = r;
+
+  while (x1 < y1)
+  {
+    if (f >= 0)
+    {
+      y1--;
+      ddFy += 2;
+      f += ddFy;
+    }
+
+    x1++;
+    ddFx += 2;
+    f += ddFx;
+
+    //Left
+    if (half & 0x1)
+    {
+      drawVLine(x - x1, y - y1, 2 * y1 + 1 + stretch, red, green, blue);
+      drawVLine(x - y1, y - x1, 2 * x1 + 1 + stretch, red, green, blue);
+    }
+
+    //Right
+    if (half & 0x2)
+    {
+      drawVLine(x + x1, y - y1, 2 * y1 + 1 + stretch, red, green, blue);
+      drawVLine(x + y1, y - x1, 2 * x1 + 1 + stretch, red, green, blue);
+   }
+  }
+}
+
+
+ 

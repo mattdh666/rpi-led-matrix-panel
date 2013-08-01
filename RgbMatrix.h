@@ -5,6 +5,9 @@
 // This class is for controlling a 32x32 RGB LED Matrix panel using
 // the Raspberry Pi GPIO.
 //
+// Buy a 32x32 RGB LED Matrix from Adafruit!
+//   http://www.adafruit.com/products/607
+//
 // For different sizes of RGB LED Matrix, change the contants in this file.
 //
 // The 32x32 panels can also be chained together to make larger panels.
@@ -12,7 +15,7 @@
 // for a 64x64 matrix), columns 1 to 64 are Left to Right across the top two
 // boards, but columns 65 to 127 are backwards Right to Left across the bottom
 // two boards. (Referenced by: ColumnCnt)
-
+//
  
 #ifndef RPI_RGBMATRIX_H
 #define RPI_RGBMATRIX_H
@@ -46,10 +49,9 @@ class RgbMatrix
  
   RgbMatrix(GpioProxy *io);
 
-  // Clear the plane
   void clearDisplay();
 
-  // Call this in a continous loop in some realtime...
+  // Call this in a loop to keep the matrix updated. 
   void updateDisplay();
 
 
@@ -73,13 +75,35 @@ class RgbMatrix
 
   void fillScreen(uint8_t red, uint8_t green, uint8_t blue);
 
+  void drawRoundRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t r,
+                     uint8_t red, uint8_t green, uint8_t blue);
+
+  void fillRoundRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t r,
+                     uint8_t red, uint8_t green, uint8_t blue);
+  
   void drawCircle(uint8_t x, uint8_t y, uint8_t r,
                   uint8_t red, uint8_t green, uint8_t blue);
+
+  // Draw one of the four quadrants of a cirle.
+  //   quadrant = 1 : Upper Left
+  //            = 2 : Upper Right
+  //            = 4 : Lower Right
+  //            = 8 : Lower Left
+  void drawCircleQuadrant(uint8_t x, uint8_t y, uint8_t r, uint8_t quadrant,
+                          uint8_t red, uint8_t green, uint8_t blue);
 
   void fillCircle(uint8_t x, uint8_t y, uint8_t r,
                   uint8_t red, uint8_t green, uint8_t blue);
 
-
+  // Fill one half of a cirle.
+  //   half = 1 : Left
+  //        = 2 : Right
+  //        = 3 : Both
+  //   stretch = number of pixels to stretch the circle vertically.
+  void fillCircleHalf(uint8_t x, uint8_t y, uint8_t r,
+                      uint8_t half, uint8_t stretch,
+                      uint8_t red, uint8_t green, uint8_t blue);
+ 
 private:
   GpioProxy *const _gpio;
 
