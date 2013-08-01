@@ -65,13 +65,12 @@ class RgbMatrix
   void drawHLine(uint8_t x, uint8_t y, uint8_t w,
                  uint8_t red, uint8_t green, uint8_t blue);
 
-/*
   void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
                 uint8_t red, uint8_t green, uint8_t blue);
-*//*
+
   void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
                 uint8_t red, uint8_t green, uint8_t blue);
-*/
+
   void fillScreen(uint8_t red, uint8_t green, uint8_t blue);
 
   void drawCircle(uint8_t x, uint8_t y, uint8_t r,

@@ -4,8 +4,11 @@
 
 // This class is for controlling a 32x32 RGB LED Matrix panel using
 // the Raspberry Pi GPIO.
-
-// This code is based on an example found at:
+//
+// Buy a 32x32 RGB LED Matrix from Adafruit!
+//   http://www.adafruit.com/products/607
+//
+// This code is based on a cool example found at:
 //   https://github.com/hzeller/rpi-rgb-led-matrix
 
 #include "RgbMatrix.h"
@@ -18,23 +21,23 @@
 #include <time.h>
 
 
-// Clocking in a row takes about 3.4usec (TODO: this is actually per board)
+// Clocking in a row takes about 3.4usec (TODO: per board)
 // Because clocking the data in is part of the 'wait time', we need to
 // substract that from the row sleep time.
-static const int kRowClockTime = 3400;
+static const int RowClockTime = 3400;
 
 const long row_sleep_nanos[8] = {   // Only using the first PwmResolution elements.
-  (1 * kRowClockTime) - kRowClockTime,
-  (2 * kRowClockTime) - kRowClockTime,
-  (4 * kRowClockTime) - kRowClockTime,
-  (8 * kRowClockTime) - kRowClockTime,
-  (16 * kRowClockTime) - kRowClockTime,
-  (32 * kRowClockTime) - kRowClockTime,
-  (64 * kRowClockTime) - kRowClockTime,
+   (1 * RowClockTime) - RowClockTime,
+   (2 * RowClockTime) - RowClockTime,
+   (4 * RowClockTime) - RowClockTime,
+   (8 * RowClockTime) - RowClockTime,
+  (16 * RowClockTime) - RowClockTime,
+  (32 * RowClockTime) - RowClockTime,
+  (64 * RowClockTime) - RowClockTime,
   // Too much flicker with 8 bits. We should have a separate screen pass
   // with this bit plane. Or interlace. Or trick with -OE switch on in the
-  // middle of row-clocking, thus have kRowClockTime / 2
-  (128 * kRowClockTime) - kRowClockTime, // too much flicker.
+  // middle of row-clocking, thus have RowClockTime / 2
+  (128 * RowClockTime) - RowClockTime, // too much flicker.
 };
 
 static void sleep_nanos(long nanos)
@@ -92,7 +95,6 @@ void RgbMatrix::clearDisplay()
 
 
 //TODO: Notes...
-
 void RgbMatrix::updateDisplay()
 {
   GpioPins serial_mask;   // Mask of bits we need to set while clocking in.
@@ -103,12 +105,12 @@ void RgbMatrix::updateDisplay()
   GpioPins row_mask;
   row_mask.bits.rowAddress = 0xf;
 
-  //TODO: Why do I need an whole "GpioPins" for these bits?
-  GpioPins clock, output_enable, strobe;
+  //TODO: Why do I need a whole "GpioPins" for these bits?
+  GpioPins clock, output_enable, latch;
 
   clock.bits.clock = 1;
   output_enable.bits.outputEnabled = 1;
-  strobe.bits.latch = 1;
+  latch.bits.latch = 1;
 
   GpioPins row_bits;
 
@@ -142,14 +144,14 @@ void RgbMatrix::updateDisplay()
         sleep_nanos(kIOStabilizeWaitNanos);
       }
 
-      _gpio->setBits(output_enable.raw);  // switch off while strobe.
+      _gpio->setBits(output_enable.raw);  // switch off while strobe (latch).
 
       row_bits.bits.rowAddress = row;
       _gpio->setBits(row_bits.raw & row_mask.raw);
       _gpio->clearBits(~row_bits.raw & row_mask.raw);
 
-      _gpio->setBits(strobe.raw);   // Strobe
-      _gpio->clearBits(strobe.raw);
+      _gpio->setBits(latch.raw);   // strobe
+      _gpio->clearBits(latch.raw);
 
       // Now switch on for the given sleep time.
       _gpio->clearBits(output_enable.raw);
@@ -268,25 +270,41 @@ void RgbMatrix::drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1,
 void RgbMatrix::drawVLine(uint8_t x, uint8_t y, uint8_t h,
                           uint8_t red, uint8_t green, uint8_t blue)
 {
+  drawLine(x, y, x, y + h - 1, red, green, blue);
 }
+
 
 // Draw a horizontal line
 void RgbMatrix::drawHLine(uint8_t x, uint8_t y, uint8_t w,
                           uint8_t red, uint8_t green, uint8_t blue)
 {
+  drawLine(x, y, x + w - 1, y, red, green, blue);
 }
 
+
+void RgbMatrix::drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
+                         uint8_t red, uint8_t green, uint8_t blue)
+{
+  drawHLine(x, y, w, red, green, blue);
+  drawHLine(x, y + h - 1, w, red, green, blue);
+  drawVLine(x, y, h, red, green, blue);
+  drawVLine(x + w - 1, y, h, red, green, blue);
+}
+
+
+void RgbMatrix::fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
+                         uint8_t red, uint8_t green, uint8_t blue)
+{
+  for (uint8_t i = x; i < x + w; i++)
+  {
+    drawVLine(i, y, h, red, green, blue);
+  }
+}
 
 
 void RgbMatrix::fillScreen(uint8_t red, uint8_t green, uint8_t blue)
 {
-  for (int x = 0; x < Width; ++x)
-  {
-    for (int y = 0; y < Height; ++y)
-    {
-      drawPixel(x, y, red, green, blue);
-    }
-  }
+  fillRect(0, 0, Width, Height, red, green, blue);
 }
 
 

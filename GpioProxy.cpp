@@ -82,7 +82,6 @@ uint32_t GpioProxy::setupOutputBits(uint32_t outputs)
   {
     if (outputs & (1 << b))
     {
-      fprintf(stderr, "Bit: %u\n", (uint32_t)b);
       INP_GPIO(b);  // Must use INP_GPIO before using OUT_GPIO.
       OUT_GPIO(b);
     }
