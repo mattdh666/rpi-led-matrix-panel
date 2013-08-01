@@ -12,11 +12,14 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
+#define _USE_MATH_DEFINES
 
 // Clocking in a row takes about 3.4usec (TODO: per board)
 // Because clocking the data in is part of the 'wait time', we need to
@@ -193,15 +196,22 @@ void RgbMatrix::drawPixel(uint8_t x, uint8_t y,
     {
       // Upper sub-panel
       bits->bits.r1 = (red & mask) == mask;
-      bits->bits.g1 = (green & mask) == mask;
-      bits->bits.b1 = (blue & mask) == mask;
+      //TODO: Figure out why these are reversed. Did I wire backwards??
+      //bits->bits.g1 = (green & mask) == mask;
+      //bits->bits.b1 = (blue & mask) == mask;
+      bits->bits.b1 = (green & mask) == mask;
+      bits->bits.g1 = (blue & mask) == mask;
+ 
     }
     else
     {
       // Lower sub-panel
       bits->bits.r2 = (red & mask) == mask;
-      bits->bits.g2 = (green & mask) == mask;
-      bits->bits.b2 = (blue & mask) == mask;
+      //TODO: Figure out why these are reversed. Did I wire backwards??
+      //bits->bits.g2 = (green & mask) == mask;
+      //bits->bits.b2 = (blue & mask) == mask;
+      bits->bits.b2 = (green & mask) == mask;
+      bits->bits.g2 = (blue & mask) == mask;
     }
   }
 }
@@ -473,4 +483,53 @@ void RgbMatrix::fillCircleHalf(uint8_t x, uint8_t y, uint8_t r,
 }
 
 
+void RgbMatrix::drawEllipticalArc(uint8_t x, uint8_t y,
+                                  float startAngle, float arc, uint8_t radius,
+                                  uint8_t red, uint8_t green, uint8_t blue)
+{
+  if (abs(arc) > 360)
+  {
+    arc = 360;
+  }
+
+  // Draw max of 45 degree segments.
+  // First, calculate how many segments are needed.
+  uint8_t segs = ceil(abs(arc)/45);
+
+  // Sweep of each segment
+  float segAngle = arc / segs;
+
+  // Convert from degrees to radians
+  float theta = -(segAngle/180)*M_PI;
+  float angle = -(startAngle/180)*M_PI;
+
+  float ax = x - cos(angle) * radius;
+  float ay = y - sin(angle) * radius;  //TODO: Do we need a different radius (yRadius)?
+
+  // Draw as 45 degree segments
+  if (segs > 0)
+  {
+    float cx;
+    float cy;
+    uint8_t x1;
+    uint8_t y1;
+
+    for (int i = 0; i < segs; i++)
+    {
+      angle += theta;
+
+      // Find the angle halfway between the last angle and the new one,
+      // calculate our end point, our control point, and draw the arc segment.
+
+      cx = ax + cos(angle - (theta/2)) * (radius/cos(theta/2));
+      cy = ay + sin(angle - (theta/2)) * (radius/cos(theta/2));
+
+      x1 = ax + cos(angle) * radius;
+      y1 = ay + sin(angle) * radius;
+
+
+    }
+  }
+
+}
  

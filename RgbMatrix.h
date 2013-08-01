@@ -103,6 +103,11 @@ class RgbMatrix
   void fillCircleHalf(uint8_t x, uint8_t y, uint8_t r,
                       uint8_t half, uint8_t stretch,
                       uint8_t red, uint8_t green, uint8_t blue);
+
+  void drawEllipticalArc(uint8_t x, uint8_t y,
+                         float startAngle, float arc, uint8_t radius,
+                         uint8_t red, uint8_t green, uint8_t blue);
+
  
 private:
   GpioProxy *const _gpio;
