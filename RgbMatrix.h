@@ -104,10 +104,28 @@ class RgbMatrix
                       uint8_t half, uint8_t stretch,
                       uint8_t red, uint8_t green, uint8_t blue);
 
-  void drawEllipticalArc(uint8_t x, uint8_t y,
-                         float startAngle, float arc, uint8_t radius,
-                         uint8_t red, uint8_t green, uint8_t blue);
+  // Draw an arc.
+  //   x : Segment origin
+  //   y : Segment origin
+  //   r : Segment radius
+  //   startAngle : starting angle in degrees  (East == 0)
+  //   endAngle : ending angle in degrees
+  void drawArc(uint8_t x, uint8_t y, uint8_t r, float startAngle, float endAngle,
+               uint8_t red, uint8_t green, uint8_t blue);
 
+  // Draw the outline of a wedge.
+  //   x : Segment origin
+  //   y : Segment origin
+  //   r : Segment radius
+  //   startAngle : starting angle in degrees  (East == 0)
+  //   endAngle : ending angle in degrees
+  void drawWedge(uint8_t x, uint8_t y, uint8_t r, float startAngle, float endAngle,
+                 uint8_t red, uint8_t green, uint8_t blue);
+
+
+
+  void drawChar(uint8_t x, uint8_t y, unsigned char letter,
+                uint8_t red, uint8_t green, uint8_t blue);
  
 private:
   GpioProxy *const _gpio;

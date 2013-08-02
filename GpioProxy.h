@@ -72,9 +72,10 @@ class GpioProxy
 
 
  private:
+
   uint32_t _outputBits;
   volatile uint32_t *_gpio;
 
 };
 
-#endif  // RPI_GPIO_PROXY_H
+#endif

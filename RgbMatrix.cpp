@@ -10,16 +10,24 @@
 
 #include "RgbMatrix.h"
 
-#include <algorithm>
+#include "font3x5.h"
+#include "font5x7.h"
+
 #include <assert.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
 
+#include <algorithm>
+
 #define _USE_MATH_DEFINES
+
+#define pgm_read_byte(addr) (*(const unsigned char *)(addr))
+
 
 // Clocking in a row takes about 3.4usec (TODO: per board)
 // Because clocking the data in is part of the 'wait time', we need to
@@ -482,54 +490,88 @@ void RgbMatrix::fillCircleHalf(uint8_t x, uint8_t y, uint8_t r,
   }
 }
 
-
-void RgbMatrix::drawEllipticalArc(uint8_t x, uint8_t y,
-                                  float startAngle, float arc, uint8_t radius,
-                                  uint8_t red, uint8_t green, uint8_t blue)
+// Draw an Arc
+void RgbMatrix::drawArc(uint8_t x, uint8_t y, uint8_t r,
+                        float startAngle, float endAngle,
+                        uint8_t red, uint8_t green, uint8_t blue)
 {
-  if (abs(arc) > 360)
+  // Convert degrees to radians
+  float degreesPerRadian = M_PI / 180;
+
+  startAngle *= degreesPerRadian;
+  endAngle *= degreesPerRadian;
+  float step = 1 * degreesPerRadian; //number of degrees per point on the arc
+
+  float prevX = x + r * cos(startAngle);
+  float prevY = y + r * sin(startAngle);
+ 
+  // Draw the arc
+  for (float theta = startAngle; theta < endAngle; theta += std::min(step, endAngle - theta))
   {
-    arc = 360;
+    drawLine(prevX, prevY, x + r * cos(theta), y + r * sin(theta), red, green, blue);
+
+    prevX = x + r * cos(theta);
+    prevY = y + r * sin(theta);
   }
 
-  // Draw max of 45 degree segments.
-  // First, calculate how many segments are needed.
-  uint8_t segs = ceil(abs(arc)/45);
+  drawLine(prevX, prevY, x + r * cos(endAngle), y + r * sin(endAngle), red, green, blue);
+}
+ 
 
-  // Sweep of each segment
-  float segAngle = arc / segs;
+// Draw the outline of a wedge.
+void RgbMatrix::drawWedge(uint8_t x, uint8_t y, uint8_t r,  //TODO: add inner radius
+                          float startAngle, float endAngle,
+                          uint8_t red, uint8_t green, uint8_t blue)
+{
+  // Convert degrees to radians
+  float degreesPerRadian = M_PI / 180;
 
-  // Convert from degrees to radians
-  float theta = -(segAngle/180)*M_PI;
-  float angle = -(startAngle/180)*M_PI;
+  float startAngleDeg = startAngle * degreesPerRadian;
+  float endAngleDeg = endAngle * degreesPerRadian;
 
-  float ax = x - cos(angle) * radius;
-  float ay = y - sin(angle) * radius;  //TODO: Do we need a different radius (yRadius)?
+  uint8_t prevX = x + r * cos(startAngleDeg);
+  uint8_t prevY = y + r * sin(startAngleDeg);
 
-  // Draw as 45 degree segments
-  if (segs > 0)
+  drawLine(x, y, prevX, prevY, red, green, blue);
+
+  drawArc(x, y, r, startAngle, endAngle, red, green, blue);
+
+  drawLine(x + r * cos(endAngleDeg), y + r * sin(endAngleDeg), x, y, red, green, blue);
+}
+
+
+
+//TODO: more shapes...
+
+
+// Draw a character. (Currenly, only 5x7.  TODO: add 3x5 too.)
+void RgbMatrix::drawChar(uint8_t x, uint8_t y, unsigned char c,
+                         uint8_t red, uint8_t green, uint8_t blue)
+{
+  for (int i=0; i < 6; i++)
   {
-    float cx;
-    float cy;
-    uint8_t x1;
-    uint8_t y1;
+    uint8_t line;
 
-    for (int i = 0; i < segs; i++)
+    if (i == 5)
     {
-      angle += theta;
+      line = 0x0;
+    }
+    else
+    {
+      line = pgm_read_byte(Font5x7 + ((c - 0x20) * 5) + i);
+    }
 
-      // Find the angle halfway between the last angle and the new one,
-      // calculate our end point, our control point, and draw the arc segment.
+    for (int j=0; j < 8; j++)
+    {
+      if (line & 0x1)
+      {
+        drawPixel(x+i, y+j, red, green, blue);
+      }
 
-      cx = ax + cos(angle - (theta/2)) * (radius/cos(theta/2));
-      cy = ay + sin(angle - (theta/2)) * (radius/cos(theta/2));
-
-      x1 = ax + cos(angle) * radius;
-      y1 = ay + sin(angle) * radius;
-
-
+      line >>= 1;
     }
   }
-
 }
+
+
  

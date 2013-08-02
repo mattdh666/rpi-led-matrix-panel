@@ -14,7 +14,7 @@
 
 
 #define BCM2708_PERI_BASE 0x20000000  /* Hardware registers for peripherals start at this address */
-#define GPIO_BASE         (BCM2708_PERI_BASE + 0x200000)  /* Offset for the GPIO controller */
+#define GPIO_BASE (BCM2708_PERI_BASE + 0x200000)  /* Offset for the GPIO controller */
 
 // Page and Block size are both 4kb
 //#define PAGE_SIZE (4*1024)
@@ -24,7 +24,6 @@
 #define INP_GPIO(g) *(_gpio+((g)/10)) &= ~(7<<(((g)%10)*3))
 #define OUT_GPIO(g) *(_gpio+((g)/10)) |=  (1<<(((g)%10)*3))
 //#define SET_GPIO_ALT(g,a) *(_gpio+(((g)/10))) |= (((a)<=3?(a)+4:(a)==4?3:2)<<(((g)%10)*3))
-
 
 
 GpioProxy::GpioProxy() : _outputBits(0), _gpio(NULL)
