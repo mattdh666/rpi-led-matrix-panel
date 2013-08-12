@@ -102,7 +102,7 @@ void RgbMatrix::clearDisplay()
 }
 
 
-//TODO: Notes...
+// Write pixels to the LED panel.
 void RgbMatrix::updateDisplay()
 {
   GpioPins serialMask;   // Mask of bits we need to set while clocking in.
@@ -171,8 +171,7 @@ void RgbMatrix::updateDisplay()
 }
 
 
-void RgbMatrix::drawPixel(uint8_t x, uint8_t y,
-                          uint8_t red, uint8_t green, uint8_t blue)
+void RgbMatrix::drawPixel(uint8_t x, uint8_t y, Color color)
 {
   if (x >= Width || y >= Height) return;
 
@@ -188,7 +187,12 @@ void RgbMatrix::drawPixel(uint8_t x, uint8_t y,
   
   // TODO: re-map values to be luminance (aka gamma) corrected.
   // Ideally, we'd use 10PWM bits for this, but the Pi is too slow.
-  
+
+  // Break out values from structure
+  uint8_t red = color.red;
+  uint8_t green = color.green;
+  uint8_t blue = color.blue;
+ 
   // Scale to the number of bit planes, so MSB matches MSB of PWM.
   red   >>= 8 - PwmResolution;
   green >>= 8 - PwmResolution;
@@ -203,22 +207,15 @@ void RgbMatrix::drawPixel(uint8_t x, uint8_t y,
     {
       // Upper sub-panel
       bits->bits.r1 = (red & mask) == mask;
-      //TODO: Figure out why these are reversed. Did I wire backwards??
-      //bits->bits.g1 = (green & mask) == mask;
-      //bits->bits.b1 = (blue & mask) == mask;
-      bits->bits.b1 = (green & mask) == mask;
-      bits->bits.g1 = (blue & mask) == mask;
- 
+      bits->bits.g1 = (green & mask) == mask;
+      bits->bits.b1 = (blue & mask) == mask;
     }
     else
     {
       // Lower sub-panel
       bits->bits.r2 = (red & mask) == mask;
-      //TODO: Figure out why these are reversed. Did I wire backwards??
-      //bits->bits.g2 = (green & mask) == mask;
-      //bits->bits.b2 = (blue & mask) == mask;
-      bits->bits.b2 = (green & mask) == mask;
-      bits->bits.g2 = (blue & mask) == mask;
+      bits->bits.g2 = (green & mask) == mask;
+      bits->bits.b2 = (blue & mask) == mask;
     }
   }
 }
@@ -226,7 +223,7 @@ void RgbMatrix::drawPixel(uint8_t x, uint8_t y,
 
 // Bresenham's Line Algorithm
 void RgbMatrix::drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1,
-                         uint8_t red, uint8_t green, uint8_t blue)
+                         Color color)
 {
   int16_t steep = abs(y1 - y0) > abs(x1 - x0);
 
@@ -262,11 +259,11 @@ void RgbMatrix::drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1,
   {
     if (steep)
     {
-      drawPixel(y0, x0, red, green, blue);
+      drawPixel(y0, x0, color);
     }
     else
     {
-      drawPixel(x0, y0, red, green, blue);
+      drawPixel(x0, y0, color);
     }
 
     err -= dy;
@@ -281,77 +278,72 @@ void RgbMatrix::drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1,
 
 
 // Draw a vertical line
-void RgbMatrix::drawVLine(uint8_t x, uint8_t y, uint8_t h,
-                          uint8_t red, uint8_t green, uint8_t blue)
+void RgbMatrix::drawVLine(uint8_t x, uint8_t y, uint8_t h, Color color)
 {
-  drawLine(x, y, x, y + h - 1, red, green, blue);
+  drawLine(x, y, x, y + h - 1, color);
 }
 
 
 // Draw a horizontal line
-void RgbMatrix::drawHLine(uint8_t x, uint8_t y, uint8_t w,
-                          uint8_t red, uint8_t green, uint8_t blue)
+void RgbMatrix::drawHLine(uint8_t x, uint8_t y, uint8_t w, Color color)
 {
-  drawLine(x, y, x + w - 1, y, red, green, blue);
+  drawLine(x, y, x + w - 1, y, color);
 }
 
 
 // Draw the outline of a rectangle (no fill)
-void RgbMatrix::drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
-                         uint8_t red, uint8_t green, uint8_t blue)
+void RgbMatrix::drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, Color color)
 {
-  drawHLine(x, y, w, red, green, blue);
-  drawHLine(x, y + h - 1, w, red, green, blue);
-  drawVLine(x, y, h, red, green, blue);
-  drawVLine(x + w - 1, y, h, red, green, blue);
+  drawHLine(x, y, w, color);
+  drawHLine(x, y + h - 1, w, color);
+  drawVLine(x, y, h, color);
+  drawVLine(x + w - 1, y, h, color);
 }
 
 
-void RgbMatrix::fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
-                         uint8_t red, uint8_t green, uint8_t blue)
+void RgbMatrix::fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, Color color)
 {
   for (uint8_t i = x; i < x + w; i++)
   {
-    drawVLine(i, y, h, red, green, blue);
+    drawVLine(i, y, h, color);
   }
 }
 
 
-void RgbMatrix::fillScreen(uint8_t red, uint8_t green, uint8_t blue)
+void RgbMatrix::fillScreen(Color color)
 {
-  fillRect(0, 0, Width, Height, red, green, blue);
+  fillRect(0, 0, Width, Height, color);
 }
 
 
 // Draw a rounded rectangle with radius r.
 void RgbMatrix::drawRoundRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t r,
-                              uint8_t red, uint8_t green, uint8_t blue)
+                              Color color)
 {
-  drawHLine(x + r    , y        , w - 2 * r, red, green, blue);
-  drawHLine(x + r    , y + h - 1, w - 2 * r, red, green, blue);
-  drawVLine(x        , y + r    , h - 2 * r, red, green, blue);
-  drawVLine(x + w - 1, y + r    , h - 2 * r, red, green, blue);
+  drawHLine(x + r    , y        , w - 2 * r, color);
+  drawHLine(x + r    , y + h - 1, w - 2 * r, color);
+  drawVLine(x        , y + r    , h - 2 * r, color);
+  drawVLine(x + w - 1, y + r    , h - 2 * r, color);
 
-  drawCircleQuadrant(x + r        , y + r        , r, 1, red, green, blue);
-  drawCircleQuadrant(x + w - r - 1, y + r        , r, 2, red, green, blue);
-  drawCircleQuadrant(x + w - r - 1, y + h - r - 1, r, 4, red, green, blue);
-  drawCircleQuadrant(x + r        , y + h - r - 1, r, 8, red, green, blue);
+  drawCircleQuadrant(x + r        , y + r        , r, 1, color);
+  drawCircleQuadrant(x + w - r - 1, y + r        , r, 2, color);
+  drawCircleQuadrant(x + w - r - 1, y + h - r - 1, r, 4, color);
+  drawCircleQuadrant(x + r        , y + h - r - 1, r, 8, color);
 }
 
 
 void RgbMatrix::fillRoundRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t r,
-                              uint8_t red, uint8_t green, uint8_t blue)
+                              Color color)
 {
-  fillRect(x + r, y, w - 2 * r, h, red, green, blue);
+  fillRect(x + r, y, w - 2 * r, h, color);
 
-  fillCircleHalf(x + r        , y + r, r, 1, h - 2 * r - 1, red, green, blue);
-  fillCircleHalf(x + w - r - 1, y + r, r, 2, h - 2 * r - 1, red, green, blue);
+  fillCircleHalf(x + r        , y + r, r, 1, h - 2 * r - 1, color);
+  fillCircleHalf(x + w - r - 1, y + r, r, 2, h - 2 * r - 1, color);
 }
 
 
 // Draw the outline of a cirle (no fill) - Midpoint Circle Algorithm
-void RgbMatrix::drawCircle(uint8_t x, uint8_t y, uint8_t r,
-                           uint8_t red, uint8_t green, uint8_t blue)
+void RgbMatrix::drawCircle(uint8_t x, uint8_t y, uint8_t r, Color color)
 {
   int16_t f = 1 - r;
   int16_t ddFx = 1;
@@ -359,10 +351,10 @@ void RgbMatrix::drawCircle(uint8_t x, uint8_t y, uint8_t r,
   int16_t x1 = 0;
   int16_t y1 = r;
 
-  drawPixel(x, y + r, red, green, blue);
-  drawPixel(x, y - r, red, green, blue);
-  drawPixel(x + r, y, red, green, blue);
-  drawPixel(x - r, y, red, green, blue);
+  drawPixel(x, y + r, color);
+  drawPixel(x, y - r, color);
+  drawPixel(x + r, y, color);
+  drawPixel(x - r, y, color);
 
   while (x1 < y1)
   {
@@ -377,20 +369,20 @@ void RgbMatrix::drawCircle(uint8_t x, uint8_t y, uint8_t r,
     ddFx += 2;
     f += ddFx;
 
-    drawPixel(x + x1, y + y1, red, green, blue);
-    drawPixel(x - x1, y + y1, red, green, blue);
-    drawPixel(x + x1, y - y1, red, green, blue);
-    drawPixel(x - x1, y - y1, red, green, blue);
-    drawPixel(x + y1, y + x1, red, green, blue);
-    drawPixel(x - y1, y + x1, red, green, blue);
-    drawPixel(x + y1, y - x1, red, green, blue);
-    drawPixel(x - y1, y - x1, red, green, blue);
+    drawPixel(x + x1, y + y1, color);
+    drawPixel(x - x1, y + y1, color);
+    drawPixel(x + x1, y - y1, color);
+    drawPixel(x - x1, y - y1, color);
+    drawPixel(x + y1, y + x1, color);
+    drawPixel(x - y1, y + x1, color);
+    drawPixel(x + y1, y - x1, color);
+    drawPixel(x - y1, y - x1, color);
   }
 }
 
 // Draw one of the four quadrants of a circle.
 void RgbMatrix::drawCircleQuadrant(uint8_t x, uint8_t y, uint8_t r, uint8_t quadrant,
-                                   uint8_t red, uint8_t green, uint8_t blue)
+                                   Color color)
 {
   int16_t f = 1 - r;
   int16_t ddFx = 1;
@@ -414,45 +406,44 @@ void RgbMatrix::drawCircleQuadrant(uint8_t x, uint8_t y, uint8_t r, uint8_t quad
     //Upper Left
     if (quadrant & 0x1)
     {
-      drawPixel(x - y1, y - x1, red, green, blue);
-      drawPixel(x - x1, y - y1, red, green, blue);
+      drawPixel(x - y1, y - x1, color);
+      drawPixel(x - x1, y - y1, color);
     }
 
     //Upper Right
     if (quadrant & 0x2)
     {
-      drawPixel(x + x1, y - y1, red, green, blue);
-      drawPixel(x + y1, y - x1, red, green, blue);
+      drawPixel(x + x1, y - y1, color);
+      drawPixel(x + y1, y - x1, color);
     }
 
     //Lower Right
     if (quadrant & 0x4)
     {
-      drawPixel(x + x1, y + y1, red, green, blue);
-      drawPixel(x + y1, y + x1, red, green, blue);
+      drawPixel(x + x1, y + y1, color);
+      drawPixel(x + y1, y + x1, color);
     }
 
     //Lower Left
     if (quadrant & 0x8)
     {
-      drawPixel(x - y1, y + x1, red, green, blue);
-      drawPixel(x - x1, y + y1, red, green, blue);
+      drawPixel(x - y1, y + x1, color);
+      drawPixel(x - x1, y + y1, color);
     } 
   }
 }
 
 
-void RgbMatrix::fillCircle(uint8_t x, uint8_t y, uint8_t r,
-                           uint8_t red, uint8_t green, uint8_t blue)
+void RgbMatrix::fillCircle(uint8_t x, uint8_t y, uint8_t r, Color color)
 {
-  drawVLine(x, y - r, 2 * r + 1, red, green, blue);
-  fillCircleHalf(x, y, r, 3, 0, red, green, blue);
+  drawVLine(x, y - r, 2 * r + 1, color);
+  fillCircleHalf(x, y, r, 3, 0, color);
 }
 
 
 void RgbMatrix::fillCircleHalf(uint8_t x, uint8_t y, uint8_t r,
                                uint8_t half, uint8_t stretch,
-                               uint8_t red, uint8_t green, uint8_t blue)
+                               Color color)
 {
   int16_t f = 1 - r;
   int16_t ddFx = 1;
@@ -476,15 +467,15 @@ void RgbMatrix::fillCircleHalf(uint8_t x, uint8_t y, uint8_t r,
     //Left
     if (half & 0x1)
     {
-      drawVLine(x - x1, y - y1, 2 * y1 + 1 + stretch, red, green, blue);
-      drawVLine(x - y1, y - x1, 2 * x1 + 1 + stretch, red, green, blue);
+      drawVLine(x - x1, y - y1, 2 * y1 + 1 + stretch, color);
+      drawVLine(x - y1, y - x1, 2 * x1 + 1 + stretch, color);
     }
 
     //Right
     if (half & 0x2)
     {
-      drawVLine(x + x1, y - y1, 2 * y1 + 1 + stretch, red, green, blue);
-      drawVLine(x + y1, y - x1, 2 * x1 + 1 + stretch, red, green, blue);
+      drawVLine(x + x1, y - y1, 2 * y1 + 1 + stretch, color);
+      drawVLine(x + y1, y - x1, 2 * x1 + 1 + stretch, color);
    }
   }
 }
@@ -492,7 +483,7 @@ void RgbMatrix::fillCircleHalf(uint8_t x, uint8_t y, uint8_t r,
 // Draw an Arc
 void RgbMatrix::drawArc(uint8_t x, uint8_t y, uint8_t r,
                         float startAngle, float endAngle,
-                        uint8_t red, uint8_t green, uint8_t blue)
+                        Color color)
 {
   // Convert degrees to radians
   float degreesPerRadian = M_PI / 180;
@@ -507,20 +498,20 @@ void RgbMatrix::drawArc(uint8_t x, uint8_t y, uint8_t r,
   // Draw the arc
   for (float theta = startAngle; theta < endAngle; theta += std::min(step, endAngle - theta))
   {
-    drawLine(prevX, prevY, x + r * cos(theta), y + r * sin(theta), red, green, blue);
+    drawLine(prevX, prevY, x + r * cos(theta), y + r * sin(theta), color);
 
     prevX = x + r * cos(theta);
     prevY = y + r * sin(theta);
   }
 
-  drawLine(prevX, prevY, x + r * cos(endAngle), y + r * sin(endAngle), red, green, blue);
+  drawLine(prevX, prevY, x + r * cos(endAngle), y + r * sin(endAngle), color);
 }
  
 
 // Draw the outline of a wedge.
 void RgbMatrix::drawWedge(uint8_t x, uint8_t y, uint8_t r,  //TODO: add inner radius
                           float startAngle, float endAngle,
-                          uint8_t red, uint8_t green, uint8_t blue)
+                          Color color)
 {
   // Convert degrees to radians
   float degreesPerRadian = M_PI / 180;
@@ -531,21 +522,21 @@ void RgbMatrix::drawWedge(uint8_t x, uint8_t y, uint8_t r,  //TODO: add inner ra
   uint8_t prevX = x + r * cos(startAngleDeg);
   uint8_t prevY = y + r * sin(startAngleDeg);
 
-  drawLine(x, y, prevX, prevY, red, green, blue);
+  drawLine(x, y, prevX, prevY, color);
 
-  drawArc(x, y, r, startAngle, endAngle, red, green, blue);
+  drawArc(x, y, r, startAngle, endAngle, color);
 
-  drawLine(x + r * cos(endAngleDeg), y + r * sin(endAngleDeg), x, y, red, green, blue);
+  drawLine(x + r * cos(endAngleDeg), y + r * sin(endAngleDeg), x, y, color);
 }
 
 
-//TODO: more shapes...
+//TODO: Add more shapes...
 
 
 
-// Put a character on the display.
+// Put a character on the display using glcd fonts.
 void RgbMatrix::putChar(uint8_t x, uint8_t y, unsigned char c, uint8_t size,
-                        uint8_t red, uint8_t green, uint8_t blue)
+                        Color color)
 {
   unsigned char *font = Font5x7;
   uint8_t fontWidth = 5;
@@ -579,7 +570,7 @@ void RgbMatrix::putChar(uint8_t x, uint8_t y, unsigned char c, uint8_t size,
     {
       if (line & 0x1)
       {
-        drawPixel(x+i, y+j, red, green, blue);
+        drawPixel(x+i, y+j, color);
       }
 
       line >>= 1;

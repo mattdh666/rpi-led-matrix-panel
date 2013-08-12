@@ -8,13 +8,13 @@
 // Buy a 32x32 RGB LED Matrix from Adafruit!
 //   http://www.adafruit.com/products/607
 //
-// For different sizes of RGB LED Matrix, change the contants in this file.
+// For different sizes of RGB LED Matrix, change the constants in this file.
 //
 // The 32x32 panels can also be chained together to make larger panels.
 // When daisy-chaining multiple boards in a square (like four 32x32 boards
-// for a 64x64 matrix), columns 1 to 64 are Left to Right across the top two
-// boards, but columns 65 to 127 are backwards Right to Left across the bottom
-// two boards. (Referenced by: ColumnCnt)
+// for a 64x64 matrix), columns 1:64 (rows 1:32) are Left to Right across
+// the top two boards, but columns 65:128 (rows 33:64) are backwards Right
+// to Left across the bottom two boards. (Referenced by: ColumnCnt)
 //
  
 #ifndef RPI_RGBMATRIX_H
@@ -23,6 +23,13 @@
 #include <stdint.h>
 
 #include "GpioProxy.h"
+
+
+struct Color {
+  uint8_t red;
+  uint8_t green;
+  uint8_t blue;
+};
 
 
 class RgbMatrix
@@ -47,7 +54,7 @@ public:
   // Pulse Width Modulation (PWM) Resolution 
   static const int PwmResolution = 4;
 
- 
+
   RgbMatrix(GpioProxy *io);
 
   void clearDisplay();
@@ -57,33 +64,27 @@ public:
 
 
   //Drawing functions
-  void drawPixel(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue);
+  void drawPixel(uint8_t x, uint8_t y, Color color);
 
-  void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1,
-                uint8_t red, uint8_t green, uint8_t blue);
+  void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, Color color);
 
-  void drawVLine(uint8_t x, uint8_t y, uint8_t h,
-                 uint8_t red, uint8_t green, uint8_t blue);
+  void drawVLine(uint8_t x, uint8_t y, uint8_t h, Color color);
 
-  void drawHLine(uint8_t x, uint8_t y, uint8_t w,
-                 uint8_t red, uint8_t green, uint8_t blue);
+  void drawHLine(uint8_t x, uint8_t y, uint8_t w, Color color);
 
-  void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
-                uint8_t red, uint8_t green, uint8_t blue);
+  void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, Color color);
 
-  void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
-                uint8_t red, uint8_t green, uint8_t blue);
+  void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, Color color);
 
-  void fillScreen(uint8_t red, uint8_t green, uint8_t blue);
+  void fillScreen(Color color);
 
   void drawRoundRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t r,
-                     uint8_t red, uint8_t green, uint8_t blue);
+                     Color color);
 
   void fillRoundRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t r,
-                     uint8_t red, uint8_t green, uint8_t blue);
+                     Color color);
   
-  void drawCircle(uint8_t x, uint8_t y, uint8_t r,
-                  uint8_t red, uint8_t green, uint8_t blue);
+  void drawCircle(uint8_t x, uint8_t y, uint8_t r, Color color);
 
   // Draw one of the four quadrants of a cirle.
   //   quadrant = 1 : Upper Left
@@ -91,10 +92,9 @@ public:
   //            = 4 : Lower Right
   //            = 8 : Lower Left
   void drawCircleQuadrant(uint8_t x, uint8_t y, uint8_t r, uint8_t quadrant,
-                          uint8_t red, uint8_t green, uint8_t blue);
+                          Color color);
 
-  void fillCircle(uint8_t x, uint8_t y, uint8_t r,
-                  uint8_t red, uint8_t green, uint8_t blue);
+  void fillCircle(uint8_t x, uint8_t y, uint8_t r, Color color);
 
   // Fill one half of a cirle.
   //   half = 1 : Left
@@ -103,7 +103,7 @@ public:
   //   stretch = number of pixels to stretch the circle vertically.
   void fillCircleHalf(uint8_t x, uint8_t y, uint8_t r,
                       uint8_t half, uint8_t stretch,
-                      uint8_t red, uint8_t green, uint8_t blue);
+                      Color color);
 
   // Draw an arc.
   //   x : Segment origin
@@ -111,8 +111,9 @@ public:
   //   r : Segment radius
   //   startAngle : starting angle in degrees  (East == 0)
   //   endAngle : ending angle in degrees
-  void drawArc(uint8_t x, uint8_t y, uint8_t r, float startAngle, float endAngle,
-               uint8_t red, uint8_t green, uint8_t blue);
+  void drawArc(uint8_t x, uint8_t y, uint8_t r,
+               float startAngle, float endAngle,
+               Color color);
 
   // Draw the outline of a wedge.
   //   x : Segment origin
@@ -120,10 +121,11 @@ public:
   //   r : Segment radius
   //   startAngle : starting angle in degrees  (East == 0)
   //   endAngle : ending angle in degrees
-  void drawWedge(uint8_t x, uint8_t y, uint8_t r, float startAngle, float endAngle,
-                 uint8_t red, uint8_t green, uint8_t blue);
+  void drawWedge(uint8_t x, uint8_t y, uint8_t r,
+                 float startAngle, float endAngle,
+                 Color color);
 
-  
+
 
   // Put a single character on the display.
   //   x : X for top left origin
@@ -132,13 +134,12 @@ public:
   //   size = 1 : Small (3x5)
   //        = 2 : Large (5x7)
   void putChar(uint8_t x, uint8_t y, unsigned char letter, uint8_t size,
-               uint8_t red, uint8_t green, uint8_t blue);
+               Color color);
 
  
 private:
 
   GpioProxy *const _gpio;
-
 
   // The following data structure represents the pins on the Raspberry Pi GPIO.
   // Each RGB LED Panel requires writing to 2 LED's at a time, so the data
@@ -155,12 +156,23 @@ private:
   //   GPIO 9 (MISO)      -->  C    | Address
   //   GPIO 10 (MOSI)     -->  D  --|
   //   GPIO 17            -->  R1 (LED 1: Red)
+  //   GPIO 18 (PCM_CLK)  -->  B1 (LED 1: Blue)
+  //   GPIO 22            -->  G1 (LED 1: Green)
+  //   GPIO 23            -->  R2 (LED 2: Red)
+  //   GPIO 24            -->  B2 (LED 2: Blue)
+  //   GPIO 25            -->  G2 (LED 2: Green)
+  //
+  // ***************************************************************************
+  // NOTE: My LED panel has the Green and Blue pins reversed whem compared to
+  //       the original mapping I got from Adafruit's website:
+  // ***************************************************************************
+  //   GPIO 17            -->  R1 (LED 1: Red)
   //   GPIO 18 (PCM_CLK)  -->  G1 (LED 1: Green)
   //   GPIO 22            -->  B1 (LED 1: Blue)
   //   GPIO 23            -->  R2 (LED 2: Red)
   //   GPIO 24            -->  G2 (LED 2: Green)
   //   GPIO 25            -->  B2 (LED 2: Blue)
-  //
+ 
   union GpioPins {
     struct {
       unsigned int ignoredPins1:2;   // 0,1
@@ -171,12 +183,12 @@ private:
       unsigned int rowAddress:4;     // 7-10
       unsigned int ignoredPins3:6;   // 11-16
       unsigned int r1:1;             // 17
-      unsigned int g1:1;             // 18
+      unsigned int b1:1;             // 18
       unsigned int ignoredPins4:3;   // 19-21
-      unsigned int b1:1;             // 22
+      unsigned int g1:1;             // 22
       unsigned int r2:1;             // 23
-      unsigned int g2:1;             // 24
-      unsigned int b2:1;             // 25
+      unsigned int b2:1;             // 24
+      unsigned int g2:1;             // 25
     } bits;
     uint32_t raw;
     GpioPins() : raw(0) {}
