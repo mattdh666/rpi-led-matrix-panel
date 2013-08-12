@@ -540,28 +540,44 @@ void RgbMatrix::drawWedge(uint8_t x, uint8_t y, uint8_t r,  //TODO: add inner ra
 }
 
 
-
 //TODO: more shapes...
 
 
-// Draw a character. (Currenly, only 5x7.  TODO: add 3x5 too.)
-void RgbMatrix::drawChar(uint8_t x, uint8_t y, unsigned char c,
+
+// Draw a character.
+//TODO: Add size: uint8_t size (0x1, 0x2...) (Small, Large)
+void RgbMatrix::drawChar(uint8_t x, uint8_t y, unsigned char c, uint8_t size,
                          uint8_t red, uint8_t green, uint8_t blue)
 {
-  for (int i=0; i < 6; i++)
+  unsigned char font[] = Font5x7;
+  uint8_t fontWidth = 5;
+  uint8_t fontHeight = 7;
+
+  if (size & 0x1) //small (3x5)
+  {
+    font = Font3x5;
+    fontWidth = 3;
+    fontHeight = 5;
+  }
+  else if (size & 0x2) //large (5x7)
+  {
+    ; //already set as default.
+  }
+
+  for (int i=0; i < fontWidth+1; i++)
   {
     uint8_t line;
 
-    if (i == 5)
+    if (i == fontWidth)
     {
       line = 0x0;
     }
     else
     {
-      line = pgm_read_byte(Font5x7 + ((c - 0x20) * 5) + i);
+      line = pgm_read_byte(font + ((c - 0x20) * 5) + i);
     }
 
-    for (int j=0; j < 8; j++)
+    for (int j=0; j < fontHeight+1; j++)
     {
       if (line & 0x1)
       {

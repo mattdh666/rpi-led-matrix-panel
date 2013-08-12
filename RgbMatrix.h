@@ -21,6 +21,7 @@
 #define RPI_RGBMATRIX_H
 
 #include <stdint.h>
+
 #include "GpioProxy.h"
 
 
@@ -122,9 +123,15 @@ class RgbMatrix
   void drawWedge(uint8_t x, uint8_t y, uint8_t r, float startAngle, float endAngle,
                  uint8_t red, uint8_t green, uint8_t blue);
 
+  
 
-
-  void drawChar(uint8_t x, uint8_t y, unsigned char letter,
+  // Draw a single character.
+  //   x : X for top left origin
+  //   y : Y for top left origin
+  //   letter : the character to draw
+  //   size = 1 : Small (3x5)
+  //        = 2 : Large (5x7)
+  void drawChar(uint8_t x, uint8_t y, unsigned char letter, uint8_t size,
                 uint8_t red, uint8_t green, uint8_t blue);
  
 private:
