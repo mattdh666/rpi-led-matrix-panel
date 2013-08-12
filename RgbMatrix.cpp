@@ -10,8 +10,8 @@
 
 #include "RgbMatrix.h"
 
-#include "font3x5.h"
-#include "font5x7.h"
+#include "Font3x5.h"
+#include "Font5x7.h"
 
 #include <assert.h>
 #include <math.h>
@@ -34,7 +34,7 @@
 // substract that from the row sleep time.
 static const int RowClockTime = 3400;
 
-const long row_sleep_nanos[8] = {   // Only using the first PwmResolution elements.
+const long RowSleepNanos[8] = {   // Only using the first PwmResolution elements.
    (1 * RowClockTime) - RowClockTime,
    (2 * RowClockTime) - RowClockTime,
    (4 * RowClockTime) - RowClockTime,
@@ -48,7 +48,7 @@ const long row_sleep_nanos[8] = {   // Only using the first PwmResolution elemen
   (128 * RowClockTime) - RowClockTime, // too much flicker.
 };
 
-static void sleep_nanos(long nanos)
+static void sleepNanos(long nanos)
 {
   // For sleep times above 20usec, nanosleep seems to be fine, but it has
   // an offset of about 20usec (on the RPi distribution I was testing it on).
@@ -67,7 +67,7 @@ static void sleep_nanos(long nanos)
     // The following loop is determined empirically on a 700Mhz RPi
     for (int i = nanos >> 2; i != 0; --i)
     {
-      asm("");   // force GCC not to optimize this away.
+      asm("");  // Force GCC not to optimize this away.
     }
   }
 }
@@ -90,7 +90,7 @@ RgbMatrix::RgbMatrix(GpioProxy *io) : _gpio(io)
   const uint32_t result = _gpio->setupOutputBits(b.raw);
 
   assert(result == b.raw);
-  assert(PwmResolution < 8);    // only up to 7 makes sense.
+  assert(PwmResolution < 8);  // only up to 7 makes sense.
 
   clearDisplay();
 }
@@ -105,22 +105,21 @@ void RgbMatrix::clearDisplay()
 //TODO: Notes...
 void RgbMatrix::updateDisplay()
 {
-  GpioPins serial_mask;   // Mask of bits we need to set while clocking in.
-  serial_mask.bits.r1 = serial_mask.bits.g1 = serial_mask.bits.b1 = 1;
-  serial_mask.bits.r2 = serial_mask.bits.g2 = serial_mask.bits.b2 = 1;
-  serial_mask.bits.clock = 1;
+  GpioPins serialMask;   // Mask of bits we need to set while clocking in.
+  serialMask.bits.r1 = serialMask.bits.g1 = serialMask.bits.b1 = 1;
+  serialMask.bits.r2 = serialMask.bits.g2 = serialMask.bits.b2 = 1;
+  serialMask.bits.clock = 1;
 
-  GpioPins row_mask;
-  row_mask.bits.rowAddress = 0xf;
+  GpioPins rowMask;
+  rowMask.bits.rowAddress = 0xf;
 
-  //TODO: Why do I need a whole "GpioPins" for these bits?
-  GpioPins clock, output_enable, latch;
+  GpioPins clock, outputEnable, latch;
 
   clock.bits.clock = 1;
-  output_enable.bits.outputEnabled = 1;
+  outputEnable.bits.outputEnabled = 1;
   latch.bits.latch = 1;
 
-  GpioPins row_bits;
+  GpioPins rowBits;
 
   for (uint8_t row = 0; row < RowsPerSubPanel; ++row)
   {
@@ -128,9 +127,9 @@ void RgbMatrix::updateDisplay()
     // full PWM of one row before switching rows.
     for (int b = 0; b < PwmResolution; ++b)
     {
-      const TwoRows &rowdata = _plane[b].row[row];
+      const TwoRows &rowData = _plane[b].row[row];
 
-      // Clock in the row. The time this takes is the smalles time we can
+      // Clock in the row. The time this takes is the smallest time we can
       // leave the LEDs on, thus the smallest time-constant we can use for
       // PWM (doubling the sleep time with each bit).
       // So this is the critical path; I'd love to know if we can employ some
@@ -139,34 +138,34 @@ void RgbMatrix::updateDisplay()
       //
       // However, in particular for longer chaining, it seems we need some more
       // wait time to settle.
-      const long kIOStabilizeWaitNanos = 0; //TODO: mateo was 256
+      const long StabilizeWaitNanos = 0; //TODO: mateo was 256
 
       for (uint8_t col = 0; col < ColumnCnt; ++col)
       {
-        const GpioPins &out = rowdata.column[col];
-        _gpio->clearBits(~out.raw & serial_mask.raw);  // also: resets clock.
-        sleep_nanos(kIOStabilizeWaitNanos);
-        _gpio->setBits(out.raw & serial_mask.raw);
-        sleep_nanos(kIOStabilizeWaitNanos);
+        const GpioPins &out = rowData.column[col];
+        _gpio->clearBits(~out.raw & serialMask.raw);  // also: resets clock.
+        sleepNanos(StabilizeWaitNanos);
+        _gpio->setBits(out.raw & serialMask.raw);
+        sleepNanos(StabilizeWaitNanos);
         _gpio->setBits(clock.raw);
-        sleep_nanos(kIOStabilizeWaitNanos);
+        sleepNanos(StabilizeWaitNanos);
       }
 
-      _gpio->setBits(output_enable.raw);  // switch off while strobe (latch).
+      _gpio->setBits(outputEnable.raw);  // switch off while strobe (latch).
 
-      row_bits.bits.rowAddress = row;
-      _gpio->setBits(row_bits.raw & row_mask.raw);
-      _gpio->clearBits(~row_bits.raw & row_mask.raw);
+      rowBits.bits.rowAddress = row;
+      _gpio->setBits(rowBits.raw & rowMask.raw);
+      _gpio->clearBits(~rowBits.raw & rowMask.raw);
 
       _gpio->setBits(latch.raw);   // strobe
       _gpio->clearBits(latch.raw);
 
       // Now switch on for the given sleep time.
-      _gpio->clearBits(output_enable.raw);
+      _gpio->clearBits(outputEnable.raw);
 
       // If we use less bits, then use the upper areas which leaves us more
       // CPU time to do other stuff.
-      sleep_nanos(row_sleep_nanos[b + (7 - PwmResolution)]);
+      sleepNanos(RowSleepNanos[b + (7 - PwmResolution)]);
     }
   }
 }
@@ -177,21 +176,20 @@ void RgbMatrix::drawPixel(uint8_t x, uint8_t y,
 {
   if (x >= Width || y >= Height) return;
 
-  // My setup: having four panels connected  [>] [>]
-  //                                         [<] [<]
-  // So we have up to column 64 one direction, then folding around. Lets map
-  // that backward
+  // Four panels would be connected like:  [>] [>]
+  //                                       [<] [<]
+  // Which would be 64 columns and 32 rows from L to R, then flipping backwards
+  // for the next 32 rows (and 64 columns).
   if (y > 31) 
   {
     x = 127 - x;
     y = 63 - y;
   }
   
-  // TODO: re-map values to be luminance corrected (sometimes called 'gamma').
-  // Ideally, we had like 10PWM bits for this, but we're too slow for that :/
+  // TODO: re-map values to be luminance (aka gamma) corrected.
+  // Ideally, we'd use 10PWM bits for this, but the Pi is too slow.
   
-  // Scale to the number of bit planes we actually have, so that MSB matches
-  // MSB of PWM.
+  // Scale to the number of bit planes, so MSB matches MSB of PWM.
   red   >>= 8 - PwmResolution;
   green >>= 8 - PwmResolution;
   blue  >>= 8 - PwmResolution;
@@ -590,4 +588,3 @@ void RgbMatrix::putChar(uint8_t x, uint8_t y, unsigned char c, uint8_t size,
 }
 
 
- 

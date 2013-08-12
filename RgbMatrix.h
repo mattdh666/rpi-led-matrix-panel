@@ -187,7 +187,7 @@ private:
   // 32x32 Panel requires writing an LED from each sub-panel at a time, the
   // following data structure represents two rows: n and n+16.
   struct TwoRows {
-    GpioPins column[ColumnCnt];  //TODO: Does this only use color bits???
+    GpioPins column[ColumnCnt];  //TODO: Does this only use color bits?
   };
 
   struct Display {
