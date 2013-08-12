@@ -544,12 +544,11 @@ void RgbMatrix::drawWedge(uint8_t x, uint8_t y, uint8_t r,  //TODO: add inner ra
 
 
 
-// Draw a character.
-//TODO: Add size: uint8_t size (0x1, 0x2...) (Small, Large)
-void RgbMatrix::drawChar(uint8_t x, uint8_t y, unsigned char c, uint8_t size,
-                         uint8_t red, uint8_t green, uint8_t blue)
+// Put a character on the display.
+void RgbMatrix::putChar(uint8_t x, uint8_t y, unsigned char c, uint8_t size,
+                        uint8_t red, uint8_t green, uint8_t blue)
 {
-  unsigned char font[] = Font5x7;
+  unsigned char *font = Font5x7;
   uint8_t fontWidth = 5;
   uint8_t fontHeight = 7;
 
@@ -561,7 +560,7 @@ void RgbMatrix::drawChar(uint8_t x, uint8_t y, unsigned char c, uint8_t size,
   }
   else if (size & 0x2) //large (5x7)
   {
-    ; //already set as default.
+    ; //already initialized as default 
   }
 
   for (int i=0; i < fontWidth+1; i++)
@@ -574,7 +573,7 @@ void RgbMatrix::drawChar(uint8_t x, uint8_t y, unsigned char c, uint8_t size,
     }
     else
     {
-      line = pgm_read_byte(font + ((c - 0x20) * 5) + i);
+      line = pgm_read_byte(font + ((c - 0x20) * fontWidth) + i);
     }
 
     for (int j=0; j < fontHeight+1; j++)

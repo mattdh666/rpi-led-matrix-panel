@@ -125,14 +125,14 @@ class RgbMatrix
 
   
 
-  // Draw a single character.
+  // Put a single character on the display.
   //   x : X for top left origin
   //   y : Y for top left origin
   //   letter : the character to draw
   //   size = 1 : Small (3x5)
   //        = 2 : Large (5x7)
-  void drawChar(uint8_t x, uint8_t y, unsigned char letter, uint8_t size,
-                uint8_t red, uint8_t green, uint8_t blue);
+  void putChar(uint8_t x, uint8_t y, unsigned char letter, uint8_t size,
+               uint8_t red, uint8_t green, uint8_t blue);
  
 private:
   GpioProxy *const _gpio;
