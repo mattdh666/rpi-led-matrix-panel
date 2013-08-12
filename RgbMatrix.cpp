@@ -163,6 +163,7 @@ void RgbMatrix::updateDisplay()
 
       // Now switch on for the given sleep time.
       _gpio->clearBits(output_enable.raw);
+
       // If we use less bits, then use the upper areas which leaves us more
       // CPU time to do other stuff.
       sleep_nanos(row_sleep_nanos[b + (7 - PwmResolution)]);

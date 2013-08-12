@@ -27,7 +27,7 @@
 
 class RgbMatrix
 {
- public:
+public:
 
   // Width and Height of the RBG Matrix.
   // If chaining multiple boards together, this is the overall Width x Height.
@@ -133,8 +133,10 @@ class RgbMatrix
   //        = 2 : Large (5x7)
   void putChar(uint8_t x, uint8_t y, unsigned char letter, uint8_t size,
                uint8_t red, uint8_t green, uint8_t blue);
+
  
 private:
+
   GpioProxy *const _gpio;
 
 

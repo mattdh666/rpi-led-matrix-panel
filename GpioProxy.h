@@ -31,7 +31,7 @@
 
 class GpioProxy
 {
- public:
+public:
 
   // Bits with GPIO Pins
   static const uint32_t GpioBits =
@@ -71,7 +71,7 @@ class GpioProxy
 */
 
 
- private:
+private:
 
   uint32_t _outputBits;
   volatile uint32_t *_gpio;
