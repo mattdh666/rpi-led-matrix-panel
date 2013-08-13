@@ -185,13 +185,15 @@ void RgbMatrix::drawPixel(uint8_t x, uint8_t y, Color color)
     y = 63 - y;
   }
   
-  // TODO: re-map values to be luminance (aka gamma) corrected.
-  // Ideally, we'd use 10PWM bits for this, but the Pi is too slow.
+  // TODO: Gamma correct
+  //uint8_t red   = pgm_read_byte(&Gamma[color.red]);
+  //uint8_t green = pgm_read_byte(&Gamma[color.green]);
+  //uint8_t blue  = pgm_read_byte(&Gamma[color.blue]);
 
   // Break out values from structure
-  uint8_t red = color.red;
+  uint8_t red   = color.red;
   uint8_t green = color.green;
-  uint8_t blue = color.blue;
+  uint8_t blue  = color.blue;
  
   // Scale to the number of bit planes, so MSB matches MSB of PWM.
   red   >>= 8 - PwmResolution;
@@ -530,7 +532,121 @@ void RgbMatrix::drawWedge(uint8_t x, uint8_t y, uint8_t r,  //TODO: add inner ra
 }
 
 
-//TODO: Add more shapes...
+void RgbMatrix::drawTriangle(uint8_t x1, uint8_t y1,
+                             uint8_t x2, uint8_t y2,
+                             uint8_t x3, uint8_t y3,
+                             Color color)
+{
+  drawLine(x1, y1, x2, y2, color);
+  drawLine(x2, y2, x3, y3, color);
+  drawLine(x3, y3, x1, y1, color);
+}
+
+
+void RgbMatrix::fillTriangle(uint8_t x1, uint8_t y1,
+                             uint8_t x2, uint8_t y2,
+                             uint8_t x3, uint8_t y3,
+                             Color color)
+{
+  int16_t a, b, y, last;
+
+  // Sort coordinates by Y order (y3 >= y2 >= y1)
+  if (y1 > y2)
+  {
+    std::swap(y1, y2);
+    std::swap(x1, x2);
+  }
+
+  if (y2 > y3)
+  {
+    std::swap(y3, y2);
+    std::swap(x3, x2);
+  }
+  
+  if (y1 > y2) 
+  {
+    std::swap(y1, y2);
+    std::swap(x1, x2);
+  }
+
+  // Handle awkward all-on-same-line case as its own thing
+  if(y1 == y3)
+  {
+    a = b = x1;
+    if(x2 < a)
+      a = x2;
+    else if(x2 > b)
+      b = x2;
+    if(x3 < a)
+      a = x3;
+    else if(x3 > b) 
+      b = x3;
+
+    drawHLine(a, y1, b-a+1, color);
+    return;
+  }
+
+  int16_t dx12 = x2 - x1,
+          dy12 = y2 - y1,
+          dx13 = x3 - x1,
+          dy13 = y3 - y1,
+          dx23 = x3 - x2,
+          dy23 = y3 - y2,
+          sa   = 0,
+          sb   = 0;
+
+  // For upper part of triangle, find scanline crossings for segments
+  // 1-2 and 1-3.  If y2==y3 (flat-bottomed triangle), the scanline y2
+  // is included here (and second loop will be skipped, avoiding a /0
+  // error there), otherwise scanline y2 is skipped here and handled
+  // in the second loop...which also avoids a /0 error here if y1=y2
+  // (flat-topped triangle).
+  if(y2 == y3)
+    last = y2;   // Include y2 scanline
+  else         
+    last = y2-1; // Skip it
+
+  for(y = y1; y <= last; y++)
+  {
+    a   = x1 + sa / dy12;
+    b   = x1 + sb / dy13;
+    sa += dx12;
+    sb += dx13;
+    
+    /* longhand:
+    a = x1 + (x2 - x1) * (y - y1) / (y2 - y1);
+    b = x1 + (x3 - x1) * (y - y1) / (y3 - y1);
+    */
+
+    if(a > b)
+      std::swap(a,b);
+
+    drawHLine(a, y, b-a+1, color);
+  }
+
+  // For lower part of triangle, find scanline crossings for segments
+  // 1-3 and 2-3.  This loop is skipped if y2==y3.
+  sa = dx23 * (y - y2);
+  sb = dx12 * (y - y1);
+
+  for(; y<=y3; y++)
+  {
+    a   = x2 + sa / dy23;
+    b   = x1 + sb / dy13;
+    sa += dx23;
+    sb += dx13;
+
+    /* longhand:
+    a = x2 + (x3 - x2) * (y - y2) / (y3 - y2);
+    b = x1 + (x3 - x1) * (y - y1) / (y3 - y1);
+    */
+
+    if(a > b)
+      std::swap(a,b);
+
+    drawHLine(a, y, b-a+1, color);
+  }
+}
 
 
 

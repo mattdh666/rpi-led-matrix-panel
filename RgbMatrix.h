@@ -84,6 +84,7 @@ public:
   void fillRoundRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t r,
                      Color color);
   
+
   void drawCircle(uint8_t x, uint8_t y, uint8_t r, Color color);
 
   // Draw one of the four quadrants of a cirle.
@@ -124,6 +125,17 @@ public:
   void drawWedge(uint8_t x, uint8_t y, uint8_t r,
                  float startAngle, float endAngle,
                  Color color);
+
+
+  void drawTriangle(uint8_t x1, uint8_t y1,
+                    uint8_t x2, uint8_t y2,
+                    uint8_t x3, uint8_t y3,
+                    Color color);
+
+  void fillTriangle(uint8_t x1, uint8_t y1,
+                    uint8_t x2, uint8_t y2,
+                    uint8_t x3, uint8_t y3,
+                    Color color);
 
 
 
