@@ -52,7 +52,7 @@ public:
   static const int ColumnCnt = ChainedBoardsCnt * ColsPerSubPanel;
 
   // Pulse Width Modulation (PWM) Resolution 
-  static const int PwmResolution = 4;
+  static const int PwmBits = 4;
 
 
   RgbMatrix(GpioProxy *io);
@@ -61,6 +61,9 @@ public:
 
   // Call this in a loop to keep the matrix updated. 
   void updateDisplay();
+
+
+  Color ColorHSV(long hue, uint8_t sat, uint8_t val);
 
 
   //Drawing functions
@@ -137,6 +140,10 @@ public:
                     uint8_t x3, uint8_t y3,
                     Color color);
 
+
+  // Special method to create a color wheel on the display.
+  // Only works on displays where Height == Width.
+  void drawColorWheel();
 
 
   // Put a single character on the display.
@@ -218,7 +225,7 @@ private:
     TwoRows row[RowsPerSubPanel];
   };
 
-  Display _plane[PwmResolution];
+  Display _plane[PwmBits];
 
 };
 

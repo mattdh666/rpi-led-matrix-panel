@@ -13,6 +13,8 @@
 #include "Font3x5.h"
 #include "Font5x7.h"
 
+#include "Gamma.h"
+
 #include <assert.h>
 #include <math.h>
 #include <stdint.h>
@@ -34,7 +36,7 @@
 // substract that from the row sleep time.
 static const int RowClockTime = 3400;
 
-const long RowSleepNanos[8] = {   // Only using the first PwmResolution elements.
+const long RowSleepNanos[8] = {   // Only using the first PwmBits elements.
    (1 * RowClockTime) - RowClockTime,
    (2 * RowClockTime) - RowClockTime,
    (4 * RowClockTime) - RowClockTime,
@@ -90,7 +92,7 @@ RgbMatrix::RgbMatrix(GpioProxy *io) : _gpio(io)
   const uint32_t result = _gpio->setupOutputBits(b.raw);
 
   assert(result == b.raw);
-  assert(PwmResolution < 8);  // only up to 7 makes sense.
+  assert(PwmBits < 8);  // only up to 7 makes sense.
 
   clearDisplay();
 }
@@ -125,7 +127,7 @@ void RgbMatrix::updateDisplay()
   {
     // Rows can't be switched very quickly without ghosting, so we do the
     // full PWM of one row before switching rows.
-    for (int b = 0; b < PwmResolution; ++b)
+    for (int b = 0; b < PwmBits; ++b)
     {
       const TwoRows &rowData = _plane[b].row[row];
 
@@ -165,42 +167,89 @@ void RgbMatrix::updateDisplay()
 
       // If we use less bits, then use the upper areas which leaves us more
       // CPU time to do other stuff.
-      sleepNanos(RowSleepNanos[b + (7 - PwmResolution)]);
+      sleepNanos(RowSleepNanos[b + (7 - PwmBits)]);
     }
   }
 }
+
+
+//Leave output in 24-bit color (#RRGGBB)
+Color RgbMatrix::ColorHSV(long hue, uint8_t sat, uint8_t val)
+{
+  uint8_t r, g, b, lo;
+  uint16_t s1, v1;
+
+  // Hue
+  hue %= 1536;             // -1535 to +1535
+  if(hue < 0) hue += 1536; //     0 to +1535
+
+  lo = hue & 255;  // Low byte = primary/secondary color mix
+
+  // High byte = sextant of colorwheel
+  switch(hue >> 8)
+  {
+    case 0 : r = 255;      g =  lo     ; b =   0;      break; // R to Y
+    case 1 : r = 255 - lo; g = 255     ; b =   0;      break; // Y to G
+    case 2 : r =   0;      g = 255     ; b =  lo;      break; // G to C
+    case 3 : r =   0;      g = 255 - lo; b = 255;      break; // C to B
+    case 4 : r =  lo;      g =   0     ; b = 255;      break; // B to M
+    default: r = 255;      g =   0     ; b = 255 - lo; break; // M to R
+  }
+
+  // Saturation: add 1 so range is 1 to 256, which allows a bitwise right shift
+  // on the result rather than a costly divide.
+  s1 = sat + 1;
+
+  r  = 255 - (((255 - r) * s1) >> 8);
+  g  = 255 - (((255 - g) * s1) >> 8);
+  b  = 255 - (((255 - b) * s1) >> 8);
+
+  // Value (brightness): Add 1, similar to above.
+  v1 = val + 1;
+
+  Color c;
+  c.red   = (r * v1) >> 8;
+  c.green = (g * v1) >> 8;
+  c.blue  = (b * v1) >> 8;
+
+  return c;
+}
+
 
 
 void RgbMatrix::drawPixel(uint8_t x, uint8_t y, Color color)
 {
   if (x >= Width || y >= Height) return;
 
-  // Four panels would be connected like:  [>] [>]
-  //                                       [<] [<]
+  // Four 32x32 panels would be connected like:  [>] [>]
+  //                                             [<] [<]
   // Which would be 64 columns and 32 rows from L to R, then flipping backwards
   // for the next 32 rows (and 64 columns).
-  if (y > 31) 
+  if (y > 31)
   {
     x = 127 - x;
     y = 63 - y;
   }
-  
-  // TODO: Gamma correct
-  //uint8_t red   = pgm_read_byte(&Gamma[color.red]);
-  //uint8_t green = pgm_read_byte(&Gamma[color.green]);
-  //uint8_t blue  = pgm_read_byte(&Gamma[color.blue]);
 
   // Break out values from structure
   uint8_t red   = color.red;
   uint8_t green = color.green;
   uint8_t blue  = color.blue;
- 
-  // Scale to the number of bit planes, so MSB matches MSB of PWM.
-  red   >>= 8 - PwmResolution;
-  green >>= 8 - PwmResolution;
-  blue  >>= 8 - PwmResolution;
 
-  for (int b = 0; b < PwmResolution; ++b)
+  // Gamma correct
+  red   = pgm_read_byte(&Gamma[red]);
+  green = pgm_read_byte(&Gamma[green]);
+  blue  = pgm_read_byte(&Gamma[blue]);
+
+  // Scale to the number of bit planes, so MSB matches MSB of PWM.
+  // This shifts right 4 bits, since PwnBits is 4, which converts from
+  // 24-bit color (#RRGGBB) to 12-bit color (#RGB).
+  red   >>= 8 - PwmBits;
+  green >>= 8 - PwmBits;
+  blue  >>= 8 - PwmBits;
+
+  // Set RGB bits for this pixel in each PWM bit plane.
+  for (int b = 0; b < PwmBits; ++b)
   {
     uint8_t mask = 1 << b;
     GpioPins *bits = &_plane[b].row[y & 0xf].column[x];
@@ -220,6 +269,7 @@ void RgbMatrix::drawPixel(uint8_t x, uint8_t y, Color color)
       bits->bits.b2 = (blue & mask) == mask;
     }
   }
+
 }
 
 
@@ -431,7 +481,7 @@ void RgbMatrix::drawCircleQuadrant(uint8_t x, uint8_t y, uint8_t r, uint8_t quad
     {
       drawPixel(x - y1, y + x1, color);
       drawPixel(x - x1, y + y1, color);
-    } 
+    }
   }
 }
 
@@ -496,7 +546,7 @@ void RgbMatrix::drawArc(uint8_t x, uint8_t y, uint8_t r,
 
   float prevX = x + r * cos(startAngle);
   float prevY = y + r * sin(startAngle);
- 
+
   // Draw the arc
   for (float theta = startAngle; theta < endAngle; theta += std::min(step, endAngle - theta))
   {
@@ -508,7 +558,7 @@ void RgbMatrix::drawArc(uint8_t x, uint8_t y, uint8_t r,
 
   drawLine(prevX, prevY, x + r * cos(endAngle), y + r * sin(endAngle), color);
 }
- 
+
 
 // Draw the outline of a wedge.
 void RgbMatrix::drawWedge(uint8_t x, uint8_t y, uint8_t r,  //TODO: add inner radius
@@ -562,14 +612,14 @@ void RgbMatrix::fillTriangle(uint8_t x1, uint8_t y1,
     std::swap(y3, y2);
     std::swap(x3, x2);
   }
-  
-  if (y1 > y2) 
+
+  if (y1 > y2)
   {
     std::swap(y1, y2);
     std::swap(x1, x2);
   }
 
-  // Handle awkward all-on-same-line case as its own thing
+  // Handle case where all points are on the same line.
   if(y1 == y3)
   {
     a = b = x1;
@@ -579,7 +629,7 @@ void RgbMatrix::fillTriangle(uint8_t x1, uint8_t y1,
       b = x2;
     if(x3 < a)
       a = x3;
-    else if(x3 > b) 
+    else if(x3 > b)
       b = x3;
 
     drawHLine(a, y1, b-a+1, color);
@@ -603,7 +653,7 @@ void RgbMatrix::fillTriangle(uint8_t x1, uint8_t y1,
   // (flat-topped triangle).
   if(y2 == y3)
     last = y2;   // Include y2 scanline
-  else         
+  else
     last = y2-1; // Skip it
 
   for(y = y1; y <= last; y++)
@@ -612,7 +662,7 @@ void RgbMatrix::fillTriangle(uint8_t x1, uint8_t y1,
     b   = x1 + sb / dy13;
     sa += dx12;
     sb += dx13;
-    
+
     /* longhand:
     a = x1 + (x2 - x1) * (y - y1) / (y2 - y1);
     b = x1 + (x3 - x1) * (y - y1) / (y3 - y1);
@@ -649,6 +699,62 @@ void RgbMatrix::fillTriangle(uint8_t x1, uint8_t y1,
 }
 
 
+// Special method to create a color wheel on the display.
+void RgbMatrix::drawColorWheel()
+{
+  int x, y, hue;
+  float dx, dy, d;
+  uint8_t sat, val;
+
+  if (Height != Width)
+    fprintf(stderr, "Error: method drawColorWheel() only works when Height = Width.");
+  
+  float const Half = (Width - 1) / 2;
+
+  Color color;
+
+  for(y=0; y < Width; y++)
+  {
+    dy = Half - (float)y;
+
+    for(x=0; x < Height; x++)
+    {
+      dx = Half - (float)x;
+      d  = dx * dx + dy * dy;
+
+      // In the circle...
+      if(d <= ((Half+1) * (Half+1)))
+      {
+        hue = (int)((atan2(-dy, dx) + M_PI) * 1536.0 / (M_PI * 2.0));
+        d = sqrt(d);
+
+        if(d > Half)
+        {
+          // Do a little pseudo anti-aliasing along perimeter
+          sat = 255;
+          val = (int)((1.0 - (d - Half)) * 255.0 + 0.5);
+        }
+        else
+        {
+          // White at center
+          sat = (int)(d / Half * 255.0 + 0.5);
+          val = 255;
+        }
+
+        color = ColorHSV(hue, sat, val);
+      }
+      else
+      {
+        color.red = 0;
+        color.green = 0;
+        color.blue = 0;
+      }
+
+      drawPixel(x, y, color);
+    }
+  }
+}
+
 
 // Put a character on the display using glcd fonts.
 void RgbMatrix::putChar(uint8_t x, uint8_t y, unsigned char c, uint8_t size,
@@ -666,7 +772,7 @@ void RgbMatrix::putChar(uint8_t x, uint8_t y, unsigned char c, uint8_t size,
   }
   else if (size & 0x2) //large (5x7)
   {
-    ; //already initialized as default 
+    ; //already initialized as default
   }
 
   for (int i=0; i < fontWidth+1; i++)
