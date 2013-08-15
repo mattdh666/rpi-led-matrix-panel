@@ -37,13 +37,13 @@
 static const int RowClockTime = 3400;
 
 const long RowSleepNanos[8] = {   // Only using the first PwmBits elements.
-   (1 * RowClockTime) - RowClockTime,
-   (2 * RowClockTime) - RowClockTime,
-   (4 * RowClockTime) - RowClockTime,
-   (8 * RowClockTime) - RowClockTime,
-  (16 * RowClockTime) - RowClockTime,
-  (32 * RowClockTime) - RowClockTime,
-  (64 * RowClockTime) - RowClockTime,
+    (1 * RowClockTime) - RowClockTime,
+    (2 * RowClockTime) - RowClockTime,
+    (4 * RowClockTime) - RowClockTime,
+    (8 * RowClockTime) - RowClockTime,
+   (16 * RowClockTime) - RowClockTime,
+   (32 * RowClockTime) - RowClockTime,
+   (64 * RowClockTime) - RowClockTime,
   // Too much flicker with 8 bits. We should have a separate screen pass
   // with this bit plane. Or interlace. Or trick with -OE switch on in the
   // middle of row-clocking, thus have RowClockTime / 2
@@ -159,7 +159,7 @@ void RgbMatrix::updateDisplay()
       _gpio->setBits(rowBits.raw & rowMask.raw);
       _gpio->clearBits(~rowBits.raw & rowMask.raw);
 
-      _gpio->setBits(latch.raw);   // strobe
+      _gpio->setBits(latch.raw);   // strobe - on and off
       _gpio->clearBits(latch.raw);
 
       // Now switch on for the given sleep time.
@@ -237,13 +237,11 @@ void RgbMatrix::drawPixel(uint8_t x, uint8_t y, Color color)
   uint8_t blue  = color.blue;
 
   // Gamma correct
-  red   = pgm_read_byte(&Gamma[red]);
-  green = pgm_read_byte(&Gamma[green]);
-  blue  = pgm_read_byte(&Gamma[blue]);
+  //red   = pgm_read_byte(&Gamma[red]);
+  //green = pgm_read_byte(&Gamma[green]);
+  //blue  = pgm_read_byte(&Gamma[blue]);
 
   // Scale to the number of bit planes, so MSB matches MSB of PWM.
-  // This shifts right 4 bits, since PwnBits is 4, which converts from
-  // 24-bit color (#RRGGBB) to 12-bit color (#RGB).
   red   >>= 8 - PwmBits;
   green >>= 8 - PwmBits;
   blue  >>= 8 - PwmBits;
@@ -269,7 +267,6 @@ void RgbMatrix::drawPixel(uint8_t x, uint8_t y, Color color)
       bits->bits.b2 = (blue & mask) == mask;
     }
   }
-
 }
 
 

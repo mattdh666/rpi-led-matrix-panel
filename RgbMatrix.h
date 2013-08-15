@@ -52,7 +52,7 @@ public:
   static const int ColumnCnt = ChainedBoardsCnt * ColsPerSubPanel;
 
   // Pulse Width Modulation (PWM) Resolution 
-  static const int PwmBits = 4;
+  static const int PwmBits = 4; //max is 7
 
 
   RgbMatrix(GpioProxy *io);
