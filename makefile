@@ -1,16 +1,20 @@
-CXXFLAGS=-Wall -O3 -g
-LDFLAGS=-lpthread
-OBJECTS=RgbMatrixDemo.o GpioProxy.o RgbMatrix.o Thread.o
-TARGET=demo
+# Create a static library for controlling an RGB Matrix.
 
-all: $(TARGET)
+CXXFLAGS = -fPIC -Wall -O3 -g
+TARGET_LIB = librgbmatrix.a
 
-RgbMatrix.o: RgbMatrix.cpp RgbMatrix.h
-RgbMatrixDemo.o: RgbMatrix.h
+SRCS = GpioProxy.cpp RgbMatrix.cpp
+OBJS = $(SRCS:.cpp=.o)
 
-demo: $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
+
+all: $(TARGET_LIB)
+
+$(TARGET_LIB): $(OBJS)
+	ar -rs $@ $^
+
+$(SRCS:.cpp=.d):%.d:%.cpp
+	$(CXX) $(CXXFLAGS) -MM $< >$@@
 
 clean:
-	rm -f $(OBJECTS) $(TARGET)
+	rm -f $(OBJS) $(TARGET_LIB) $(SRCS:.cpp=.d)
 

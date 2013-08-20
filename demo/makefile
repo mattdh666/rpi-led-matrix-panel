@@ -1,13 +1,13 @@
 RPI_LIB = rgbmatrix
 
-CXXFLAGS = -Wall -O3 -g
-INCLUDES = -I..
+CXXFLAGS = -Wall -O3 -g -I..
 LDFLAGS = -L..
 LIBS = -lpthread -l$(RPI_LIB)
+TARGET = demo
 
 SRCS = RgbMatrixDemo.cpp Thread.cpp
 OBJS = $(SRCS:.cpp=.o)
-TARGET = demo
+
 
 all: $(TARGET)
 
