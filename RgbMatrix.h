@@ -146,12 +146,29 @@ public:
   void drawColorWheel();
 
 
+  // When using writeLetter(), the cursor is the location where to start. 
+  void setTextCursor(uint8_t x, uint8_t y);
+
+  void setFontColor(Color color);
+
+  // Three sizes are currently available:
+  //   size = 1 : Small  (3x5)
+  //        = 2 : Medium (4x6)
+  //        = 3 : Large  (5x7)
+  void setFontSize(uint8_t size);
+
+  void setWordWrap(bool wrap);
+
+  // Write a letter using the text cursor and stored Font settings.
+  void writeLetter(unsigned char letter);
+
   // Put a single character on the display.
   //   x : X for top left origin
   //   y : Y for top left origin
   //   letter : the character to draw
-  //   size = 1 : Small (3x5)
-  //        = 2 : Large (5x7)
+  //   size = 1 : Small  (3x5)
+  //        = 2 : Medium (4x6)
+  //        = 2 : Large  (5x7)
   void putChar(uint8_t x, uint8_t y, unsigned char letter, uint8_t size,
                Color color);
 
@@ -227,6 +244,13 @@ private:
 
   Display _plane[PwmBits];
 
+  // Members for writing text
+  uint8_t _textCursorX, _textCursorY;
+  Color _fontColor;
+  uint8_t _fontSize;
+  uint8_t _fontWidth;
+  uint8_t _fontHeight;
+  bool _wordWrap;
 };
 
 #endif  // RPI_RGBMATRIX_H

@@ -11,6 +11,7 @@
 #include "RgbMatrix.h"
 
 #include "Font3x5.h"
+#include "Font4x6.h"
 #include "Font5x7.h"
 
 #include "Gamma.h"
@@ -34,7 +35,7 @@
 // Clocking in a row takes about 3.4usec (TODO: per board)
 // Because clocking the data in is part of the 'wait time', we need to
 // substract that from the row sleep time.
-static const int RowClockTime = 3400;
+static const int RowClockTime = 4000; //TODO: was 3400
 
 const long RowSleepNanos[8] = {   // Only using the first PwmBits elements.
     (1 * RowClockTime) - RowClockTime,
@@ -93,6 +94,19 @@ RgbMatrix::RgbMatrix(GpioProxy *io) : _gpio(io)
 
   assert(result == b.raw);
   assert(PwmBits < 8);  // only up to 7 makes sense.
+
+  //Initialize text members
+  _textCursorX = 0;
+  _textCursorY = 0;
+  Color white;
+  white.red = 255;
+  white.green = 255;
+  white.blue = 255;
+  _fontColor = white;
+  _fontSize = 1;
+  _fontWidth = 3;
+  _fontHeight = 5;
+  _wordWrap = true;
 
   clearDisplay();
 }
@@ -752,6 +766,68 @@ void RgbMatrix::drawColorWheel()
   }
 }
 
+void RgbMatrix::setTextCursor(uint8_t x, uint8_t y)
+{
+  _textCursorX = x;
+  _textCursorY = y;
+}
+
+void RgbMatrix::setFontColor(Color color)
+{
+  _fontColor = color;
+}
+
+void RgbMatrix::setFontSize(uint8_t size)
+{
+  _fontSize = (size >= 3) ? 3 : size; //only 3 sizes for now
+
+  if (_fontSize == 1)
+  {
+    _fontWidth = 3;
+    _fontHeight = 5;
+  }
+  else if (_fontSize == 2) //medium (4x6)
+  {
+    _fontWidth = 4;
+    _fontHeight = 6;
+  }
+  else if (_fontSize == 3) //large (5x7)
+  {
+    _fontWidth = 5;
+    _fontHeight = 7;
+  }
+}
+
+void RgbMatrix::setWordWrap(bool wrap)
+{
+  _wordWrap = wrap;
+}
+
+// Write a letter using the Text cursor and stored Font settings.
+void RgbMatrix::writeLetter(unsigned char letter)
+{
+  if (letter == '\n')
+  {
+    _textCursorX = 0;
+    _textCursorY += _fontHeight;
+  }
+  else if (letter == '\r')
+  {
+    ; //ignore
+  }
+  else
+  {
+    putChar(_textCursorX, _textCursorY, letter, _fontSize, _fontColor);
+
+    _textCursorX += _fontWidth + 1;
+
+    if (_wordWrap && (_textCursorX > (Width - _fontWidth)))
+    {
+      _textCursorX = 0;
+      _textCursorY += _fontHeight + 1;
+    }
+  }
+}
 
 // Put a character on the display using glcd fonts.
 void RgbMatrix::putChar(uint8_t x, uint8_t y, unsigned char c, uint8_t size,
@@ -761,13 +837,19 @@ void RgbMatrix::putChar(uint8_t x, uint8_t y, unsigned char c, uint8_t size,
   uint8_t fontWidth = 5;
   uint8_t fontHeight = 7;
 
-  if (size & 0x1) //small (3x5)
+  if (size == 1) //small (3x5)
   {
     font = Font3x5;
     fontWidth = 3;
     fontHeight = 5;
   }
-  else if (size & 0x2) //large (5x7)
+  else if (size == 2) //medium (4x6)
+  {
+    font = Font4x6;
+    fontWidth = 4;
+    fontHeight = 6;
+  }
+  else if (size == 3) //large (5x7)
   {
     ; //already initialized as default
   }
