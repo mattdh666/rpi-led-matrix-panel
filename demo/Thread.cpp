@@ -53,7 +53,7 @@ void Thread::start(int priority)
   else
     _status = Invalid;
 
-   return;
+  return;
 }
 
 
@@ -90,5 +90,4 @@ void Thread::terminate(unsigned long i_return)
   _status = Finished;
   pthread_exit(&i_return);
 }
-
 

@@ -3,8 +3,8 @@
 // that can be found in the LICENSE file.
 //
 // Special class to drive pixels to the display.
-// Must have realtime priority to prevent jitter that will make PWM uneven.
 //
+// Must have realtime priority to prevent jitter that will make PWM uneven.
 
 #ifndef RPI_DISPLAYUPDATER_H
 #define RPI_DISPLAYUPDATER_H

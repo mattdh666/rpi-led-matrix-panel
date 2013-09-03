@@ -1,8 +1,9 @@
 // Copyright (c) 2013 Matt Hill
 // Use of this source code is governed by The MIT License
 // that can be found in the LICENSE file.
-
+//
 // Very basic abstract class for creating a POSIX thread on a Raspberry Pi.
+//
 // Class was developed using Wheezy (Linux).
 
 #ifndef RPI_THREAD_H
@@ -68,4 +69,4 @@ inline bool Thread::isDone() const
   }
 }
 
-#endif  // RPI_THREAD_H
+#endif
