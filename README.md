@@ -3,8 +3,8 @@ Raspberry Pi Library for Controlling an RGB LED Matrix
 
 This library enables drawing shapes and writing text on an RGB LED Matrix using Raspberry Pi GPIO.
 
-I developed this library using a 32x32 RGB LED Matrix I purchased from the excellent Adafruit:
-  http://www.adafruit.com/products/607
+I developed this library using a 32x32 RGB LED Matrix purchased from the excellent Adafruit.
+http://www.adafruit.com/products/607
 
 
 ### Wiring
@@ -25,8 +25,11 @@ Wire the Raspberry Pi GPIO pins to the 32x32 RGB LED Matrix as follows:
      GPIO 24            -->  B2 (LED 2: Blue)
      GPIO 25            -->  G2 (LED 2: Green)
 
-  // NOTE: My LED panel has the Green and Blue pins reversed whem compared to
-  //       the original mapping I got from Adafruit's website:
+
+Check out Adafruit's tutorial:  http://learn.adafruit.com/32x16-32x32-rgb-led-matrix
+ 
+NOTE: My LED panel has the Green and Blue pins reversed when compared to the mapping in Adafruit's tutorial, which is:
+
      GPIO 17            -->  R1 (LED 1: Red)
      GPIO 18 (PCM_CLK)  -->  G1 (LED 1: Green)
      GPIO 22            -->  B1 (LED 1: Blue)
@@ -35,35 +38,43 @@ Wire the Raspberry Pi GPIO pins to the 32x32 RGB LED Matrix as follows:
      GPIO 25            -->  B2 (LED 2: Blue)
 
 
-Also, check out Adafruit's tutorial on the 32x32 RGB LED Matrix:
-  http://learn.adafruit.com/32x16-32x32-rgb-led-matrix
- 
-
 ### Running
 
-TODO: How to run the code. Anything you might need to change.
-
-Build:
+There are several examples in the demo directory. To run them, first build the library by running make in the root of the repository.
 
 	$ make
 
-Run:
+Once the library builds successfully, change to the 'demo' directory and run make to build the demo.
+
+	$ cd demo
+	$ make
+
+To run the examples, run the demo as the super user:
 
 	$ sudo ./demo
 
+You will be presented with a menu with several examples.
 
-### Caveats
+        |------------------------------------------------|
+        |     Select an option from the menu below:      |
+        |------------------------------------------------|
+        |      (1) Draw Simple Shapes                    |
+        |      (2) Draw and Fill Shapes                  |
+        |      (3) Pulse All Pixels                      |
+        |      (4) Pulse Pixels with a Gradient          |
+        |      (5) Draw a Color Wheel                    |
+        |      (6) Quit                                  |
+        |------------------------------------------------|
+                     Your Choice:
 
-TODO: Anything you should know about...
+Choose an option and watch the demo.
 
 
 ### Credits
 
-Many code snippets taken from this repo:
-  https://github.com/hzeller/rpi-rgb-led-matrix
+Many code snippets taken from:  https://github.com/hzeller/rpi-rgb-led-matrix
 
 
 ### License
 
-Written by Matt Hill. Raspberry Pi LED Matrix Panel library released under the MIT License.
-
+Written by Matt Hill and released under an MIT License. See the LICENSE file for deatils.
