@@ -1,7 +1,7 @@
 // Copyright (c) 2013 Matt Hill
 // Use of this source code is governed by The MIT License
 // that can be found in the LICENSE file.
-
+//
 // This class handles communication with the GPIO (General Purpose Input/Output)
 // pins on a Raspberry Pi. This is this pin layout on a RPi v2:
 //
@@ -21,7 +21,6 @@
 //
 // NOTE: For this project (controlling RGB LED Matrix Panels), only Output is used.
 //       Will need to develop the Input (read) functions when required.
-//
 
 #ifndef RPI_GPIO_PROXY_H
 #define RPI_GPIO_PROXY_H
@@ -64,7 +63,7 @@ public:
 /*
   inline void write(uint32_t value)
   {
-    //TODO: Might need a sleep between the two.
+    //TODO: Might need to sleep between the two.
     setBits(value & _outputBits);
     clearBits(~value & _outputBits);
   }
