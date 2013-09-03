@@ -15,7 +15,7 @@
 // Below are several classes that demo the capabilities of the RgbMatrix class.
 
 
-// Demo of the capabilities of the RgbMatrix class
+// Draw some shapes on the RGB Matrix. 
 class RgbMatrixDrawShapes1 : public RgbMatrixContainer
 {
 public:
@@ -24,16 +24,42 @@ public:
   void run()
   {
     Color red;
-    red.red = 135;
+    red.red = 255;
 
     Color green;
-    green.green = 135;
+    green.green = 255;
 
     Color blue;
-    blue.blue = 80;
+    blue.blue = 255;
 
+    Color purple;
+    purple.red = 135;
+    purple.blue = 255;
+
+    Color yellow;
+    yellow.red = 255;
+    yellow.green = 255;
+
+    Color turquoise;
+    turquoise.green = 255;
+    turquoise.blue = 255;
+
+    // Draw some shapes
+    _matrix->drawRect(1, 1, 8, 8, blue);
+
+    _matrix->drawCircle(14, 5, 4, red);
+
+    _matrix->drawTriangle(25, 1, 30, 8, 20, 8, green);
+
+    _matrix->drawRect(1, 11, 9, 6, purple);
+
+    _matrix->drawRoundRect(11, 11, 10, 6, 2, yellow);
+
+    _matrix->drawWedge(30, 18, 8, 190, 270, turquoise);
+
+    // Write some text
     _matrix->setTextCursor(1, 19);
-    _matrix->setFontSize(2);
+    _matrix->setFontSize(2); // Medium (4x6) Font
     _matrix->setFontColor(green);
     _matrix->writeLetter('S');
     _matrix->writeLetter('i');
@@ -50,18 +76,12 @@ public:
     _matrix->writeLetter('p');
     _matrix->writeLetter('e');
     _matrix->writeLetter('s');
-
-    _matrix->drawRect(1, 1, 6, 6, blue);
-
-    _matrix->drawCircle(10, 7, 3, red);
-
-    _matrix->drawTriangle(25, 1, 31, 8, 20, 8, green);
-  }
+ }
 
 };
 
 
-// Demo of the capabilities of the RgbMatrix class
+// Draw and fill some shapes on the RGB Matrix.
 class RgbMatrixDrawShapes2 : public RgbMatrixContainer
 {
 public:
@@ -69,41 +89,75 @@ public:
 
   void run()
   {
-    Color b1;
-    b1.blue = 155;
+    Color red;
+    red.red = 255;
 
-    Color b2;
-    b2.green = 17;
-    b2.blue = 205;
+    Color green;
+    green.green = 255;
 
-    Color b3;
-    b3.green = 17;
-    b3.blue = 224;
+    Color blue;
+    blue.blue = 255;
 
-    Color b4;
-    b4.green = 17;
-    b4.blue = 234;
+    Color purple;
+    purple.red = 135;
+    purple.blue = 255;
 
-    Color b5;
-    b5.blue = 255;
-    
-    _matrix->drawRect(0, 0, 1, 32, b1);
-    _matrix->drawRect(9, 15, 1, 17, b2);
-    _matrix->drawRect(10, 15, 1, 17, b3);
-    _matrix->drawRect(11, 15, 1, 17, b4);
-    _matrix->drawRect(12, 15, 1, 17, b5);
-    _matrix->drawRect(13, 15, 1, 17, b1);
-    _matrix->drawRect(14, 15, 1, 17, b2);
-    _matrix->drawRect(15, 15, 1, 17, b3);
-    _matrix->drawRect(16, 15, 1, 17, b4);
-    _matrix->drawRect(17, 15, 1, 17, b5);
+    Color yellow;
+    yellow.red = 255;
+    yellow.green = 255;
+
+    Color turquoise;
+    turquoise.green = 255;
+    turquoise.blue = 255;
+
+    Color white;
+    white.red = 255;
+    white.green = 255;
+    white.blue = 255;
+
+    // Draw some shapes
+    _matrix->drawRect(1, 1, 8, 8, blue);
+    _matrix->fillRect(2, 2, 6, 6, red);
+
+    _matrix->drawCircle(14, 5, 4, red);
+    _matrix->fillCircle(14, 5, 3, blue);
+
+    _matrix->drawTriangle(25, 1, 30, 8, 20, 8, green);
+    _matrix->fillTriangle(25, 2, 29, 7, 21, 7, yellow);
+
+    _matrix->fillRect(1, 11, 9, 6, purple);
+
+    _matrix->drawRoundRect(11, 11, 10, 6, 2, yellow);
+    _matrix->fillRoundRect(12, 12, 8, 4, 0, white);
+
+    _matrix->fillCircleHalf(26, 14, 4, 1, 0, turquoise);
+    _matrix->fillCircleHalf(26, 14, 4, 2, 0, purple);
+
+    // Write some text
+    _matrix->setTextCursor(1, 19);
+    _matrix->setFontSize(2); // Medium (4x6) Font
+    _matrix->setFontColor(green);
+    _matrix->writeLetter('F');
+    _matrix->writeLetter('i');
+    _matrix->writeLetter('l');
+    _matrix->writeLetter('l');
+    _matrix->writeLetter('e');
+    _matrix->writeLetter('d');
+
+    _matrix->setTextCursor(1, 26);
+    _matrix->setFontColor(blue);
+    _matrix->writeLetter('S');
+    _matrix->writeLetter('h');
+    _matrix->writeLetter('a');
+    _matrix->writeLetter('p');
+    _matrix->writeLetter('e');
+    _matrix->writeLetter('s');
   }
 
 };
 
 
-
-// Cycle through colors, and pulse the entire matrix the same color.
+// Cycle through colors and pulse the entire matrix the same color.
 class RgbMatrixPulsePixels : public RgbMatrixContainer
 {
 public:
@@ -149,8 +203,7 @@ public:
 };
 
 
-
-// Demo of the capabilities of the RgbMatrix class
+// Cycle through colors and pulse the matrix in a gradient pattern.
 class RgbMatrixPulsePixelsGradient : public RgbMatrixContainer
 {
 public:
@@ -160,11 +213,6 @@ public:
   {
     uint32_t count = 0;
 
-    Color fish;
-    fish.red = 255;
-
-    _matrix->drawPixel(0, 0, fish);
-    
     while (!isDone())
     {
       count++;
@@ -194,9 +242,6 @@ public:
         iColor.green = (((i+1) * 8) > g) ? g : 0;
         iColor.blue  = (((i+1) * 8) > b) ? b : 0;
 
-        //int numero = rand() % 32;
-        //_matrix->drawRect(i, numero, 1, 31 - numero, iColor);
-
         _matrix->drawRect(0, i, 32, 1, iColor);
       }
 
@@ -205,7 +250,6 @@ public:
   }
 
 };
-
 
 
 // Draw a color wheel on the matrix. 
@@ -236,10 +280,10 @@ void displayMenu()
   printf("      |------------------------------------------------|\n");
   printf("      |     Select an option from the menu below:      |\n");
   printf("      |------------------------------------------------|\n");
-  printf("      |      (1) Pulse All Pixels                      |\n");
-  printf("      |      (2) Pulse All Pixels with a Gradient      |\n");
-  printf("      |      (3) Demo of Drawing Shapes                |\n");
-  printf("      |      (4) Another Demo of Drawing Shapes        |\n");
+  printf("      |      (1) Draw Simple Shapes                    |\n");
+  printf("      |      (2) Draw and Fill Shapes                  |\n");
+  printf("      |      (3) Pulse All Pixels                      |\n");
+  printf("      |      (4) Pulse Pixels with a Gradient          |\n");
   printf("      |      (5) Draw a Color Wheel                    |\n");
   printf("      |      (6) Quit                                  |\n");
   printf("      |------------------------------------------------|\n");
@@ -266,12 +310,11 @@ void runDemo()
 }
 
 
-
 int main(int argc, char *argv[])
 {
   GpioProxy io;
 
- if (!io.initialize())
+  if (!io.initialize())
     return 1;
 
   m = new RgbMatrix(&io);
@@ -288,28 +331,28 @@ int main(int argc, char *argv[])
     switch (choice)
     {
       case '1':
-        display = new RgbMatrixPulsePixels(m);
+        display = new RgbMatrixDrawShapes1(m);
         updater = new DisplayUpdater(m);
         printf("\n\nRunning Demo #1.\n\n");
         runDemo();
         break;
 
       case '2':
-        display = new RgbMatrixPulsePixelsGradient(m);
+        display = new RgbMatrixDrawShapes2(m);
         updater = new DisplayUpdater(m);
         printf("\n\nRunning Demo #2.\n\n");
         runDemo();
         break;
 
       case '3':
-        display = new RgbMatrixDrawShapes1(m);
+        display = new RgbMatrixPulsePixels(m);
         updater = new DisplayUpdater(m);
         printf("\n\nRunning Demo #3.\n\n");
         runDemo();
         break;
 
       case '4':
-        display = new RgbMatrixDrawShapes2(m);
+        display = new RgbMatrixPulsePixelsGradient(m);
         updater = new DisplayUpdater(m);
         printf("\n\nRunning Demo #4.\n\n");
         runDemo();  
@@ -323,6 +366,8 @@ int main(int argc, char *argv[])
         break;
 
       case '6':
+      case 'q':
+      case 'Q':
         printf("\n\nHave a nice day!\n\n");
         break;
 
