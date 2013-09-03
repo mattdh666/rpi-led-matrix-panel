@@ -1,7 +1,8 @@
 Raspberry Pi Library for Controlling an RGB LED Matrix
 ------------------------------------------------------
 
-This library enables drawing shapes and writing text on an RGB LED Matrix using Raspberry Pi GPIO. I developed it using a Raspberry Pi Model B running Debian GNU/Linux 7.0 (wheezy) and a 32x32 RGB LED Matrix purchased from the excellent Adafruit.
+This library enables drawing shapes and writing text on an RGB LED Matrix using Raspberry Pi GPIO.
+I developed it using a Raspberry Pi Model B running Debian GNU/Linux 7.0 (wheezy) and a 32x32 RGB LED Matrix purchased from the excellent Adafruit.
 http://www.adafruit.com/products/607
 
 
@@ -26,7 +27,7 @@ Wire the Raspberry Pi GPIO pins to the 32x32 RGB LED Matrix as follows:
 
 Check out Adafruit's tutorial for more details:  http://learn.adafruit.com/32x16-32x32-rgb-led-matrix
  
-<u>NOTE</u>: My LED panel has the Green and Blue pins reversed when compared to the mapping in Adafruit's tutorial, which is:
+*NOTE*: My LED panel has the Green and Blue pins reversed when compared to the mapping in Adafruit's tutorial, which is:
 
      GPIO 17            -->  R1 (LED 1: Red)
      GPIO 18 (PCM_CLK)  -->  G1 (LED 1: Green)
