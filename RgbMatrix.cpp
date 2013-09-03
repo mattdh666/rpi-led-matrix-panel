@@ -1,7 +1,7 @@
 // Copyright (c) 2013 Matt Hill
 // Use of this source code is governed by The MIT License
 // that can be found in the LICENSE file.
-
+//
 // This class is for controlling a 32x32 RGB LED Matrix panel using
 // the Raspberry Pi GPIO.
 //
@@ -14,7 +14,7 @@
 #include "Font4x6.h"
 #include "Font5x7.h"
 
-#include "Gamma.h"
+//#include "Gamma.h"
 
 #include <assert.h>
 #include <math.h>
@@ -35,7 +35,7 @@
 // Clocking in a row takes about 3.4usec (TODO: per board)
 // Because clocking the data in is part of the 'wait time', we need to
 // substract that from the row sleep time.
-static const int RowClockTime = 4000; //TODO: was 3400
+static const int RowClockTime = 3400;
 
 const long RowSleepNanos[8] = {   // Only using the first PwmBits elements.
     (1 * RowClockTime) - RowClockTime,
@@ -249,6 +249,9 @@ void RgbMatrix::drawPixel(uint8_t x, uint8_t y, Color color)
   uint8_t red   = color.red;
   uint8_t green = color.green;
   uint8_t blue  = color.blue;
+
+  //TODO: Adding Gamma correction slowed down the PWN made
+  //      the matrix flicker, so I'm removing it for now.
 
   // Gamma correct
   //red   = pgm_read_byte(&Gamma[red]);

@@ -1,7 +1,7 @@
 // Copyright (c) 2013 Matt Hill
 // Use of this source code is governed by The MIT License
 // that can be found in the LICENSE file.
-
+//
 // This class is for controlling a 32x32 RGB LED Matrix panel using
 // the Raspberry Pi GPIO.
 //
@@ -15,7 +15,6 @@
 // for a 64x64 matrix), columns 1:64 (rows 1:32) are Left to Right across
 // the top two boards, but columns 65:128 (rows 33:64) are backwards Right
 // to Left across the bottom two boards. (Referenced by: ColumnCnt)
-//
  
 #ifndef RPI_RGBMATRIX_H
 #define RPI_RGBMATRIX_H
@@ -62,9 +61,8 @@ public:
   // Call this in a loop to keep the matrix updated. 
   void updateDisplay();
 
-
+  // Convert an HSV color to an RGB color.
   Color ColorHSV(long hue, uint8_t sat, uint8_t val);
-
 
   //Drawing functions
   void drawPixel(uint8_t x, uint8_t y, Color color);
@@ -87,7 +85,6 @@ public:
   void fillRoundRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t r,
                      Color color);
   
-
   void drawCircle(uint8_t x, uint8_t y, uint8_t r, Color color);
 
   // Draw one of the four quadrants of a cirle.
@@ -128,7 +125,6 @@ public:
   void drawWedge(uint8_t x, uint8_t y, uint8_t r,
                  float startAngle, float endAngle,
                  Color color);
-
 
   void drawTriangle(uint8_t x1, uint8_t y1,
                     uint8_t x2, uint8_t y2,
@@ -253,4 +249,4 @@ private:
   bool _wordWrap;
 };
 
-#endif  // RPI_RGBMATRIX_H
+#endif
