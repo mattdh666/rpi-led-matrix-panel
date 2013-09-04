@@ -145,7 +145,7 @@ public:
   void drawColorWheel();
 
 
-  // When using writeLetter(), the cursor is the location where to start. 
+  // When using writeChar(), the cursor is the location where to start. 
   void setTextCursor(uint8_t x, uint8_t y);
 
   void setFontColor(Color color);
@@ -158,18 +158,17 @@ public:
 
   void setWordWrap(bool wrap);
 
-  // Write a letter using the text cursor and stored Font settings.
-  void writeLetter(unsigned char letter);
+  // Write a character using the text cursor and stored Font settings.
+  void writeChar(unsigned char c);
 
   // Put a single character on the display.
   //   x : X for top left origin
   //   y : Y for top left origin
-  //   letter : the character to draw
+  //   c : the character to draw
   //   size = 1 : Small  (3x5)
   //        = 2 : Medium (4x6)
   //        = 2 : Large  (5x7)
-  void putChar(uint8_t x, uint8_t y, unsigned char letter, uint8_t size,
-               Color color);
+  void putChar(uint8_t x, uint8_t y, unsigned char c, uint8_t size, Color color);
 
  
 private:

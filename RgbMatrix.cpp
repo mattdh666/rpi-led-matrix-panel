@@ -839,21 +839,21 @@ void RgbMatrix::setWordWrap(bool wrap)
   _wordWrap = wrap;
 }
 
-// Write a letter using the Text cursor and stored Font settings.
-void RgbMatrix::writeLetter(unsigned char letter)
+// Write a character using the Text cursor and stored Font settings.
+void RgbMatrix::writeChar(unsigned char c)
 {
-  if (letter == '\n')
+  if (c == '\n')
   {
     _textCursorX = 0;
     _textCursorY += _fontHeight;
   }
-  else if (letter == '\r')
+  else if (c == '\r')
   {
     ; //ignore
   }
   else
   {
-    putChar(_textCursorX, _textCursorY, letter, _fontSize, _fontColor);
+    putChar(_textCursorX, _textCursorY, c, _fontSize, _fontColor);
 
     _textCursorX += _fontWidth + 1;
 
