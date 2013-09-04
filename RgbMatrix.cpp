@@ -118,6 +118,39 @@ void RgbMatrix::clearDisplay()
 }
 
 
+// Fade whatever is on the display to black.
+void RgbMatrix::fadeDisplay()
+{
+  for (int b = PwmBits - 1; b >= 0; b--)
+  {
+    for (int x = 0; x < Width; x++)
+    {
+      for (int y = 0; y < Height; y++)
+      {
+        GpioPins *bits = &_plane[b].row[y & 0xf].column[x];
+
+        if (y < 16)
+        {
+          // Upper sub-panel
+	  bits->bits.r1 >>= 1;
+          bits->bits.g1 >>= 1;
+          bits->bits.b1 >>= 1;
+        }
+        else
+        {
+          // Lower sub-panel
+          bits->bits.r2 >>= 1;
+          bits->bits.g2 >>= 1;
+          bits->bits.b2 >>= 1;
+        }
+      }
+    }
+    //TODO: make this dependent on PwmBits (longer sleep for fewer PwmBits).
+    usleep(100000); // 1/10 second
+  }
+}
+ 
+
 // Write pixels to the LED panel.
 void RgbMatrix::updateDisplay()
 {
@@ -141,7 +174,7 @@ void RgbMatrix::updateDisplay()
   {
     // Rows can't be switched very quickly without ghosting, so we do the
     // full PWM of one row before switching rows.
-    for (int b = 0; b < PwmBits; ++b)
+    for (int b = 0; b < PwmBits; b++)
     {
       const TwoRows &rowData = _plane[b].row[row];
 
@@ -250,7 +283,7 @@ void RgbMatrix::drawPixel(uint8_t x, uint8_t y, Color color)
   uint8_t green = color.green;
   uint8_t blue  = color.blue;
 
-  //TODO: Adding Gamma correction slowed down the PWN made
+  //TODO: Adding Gamma correction slowed down the PWM and made
   //      the matrix flicker, so I'm removing it for now.
 
   // Gamma correct
@@ -264,7 +297,7 @@ void RgbMatrix::drawPixel(uint8_t x, uint8_t y, Color color)
   blue  >>= 8 - PwmBits;
 
   // Set RGB bits for this pixel in each PWM bit plane.
-  for (int b = 0; b < PwmBits; ++b)
+  for (int b = 0; b < PwmBits; b++)
   {
     uint8_t mask = 1 << b;
     GpioPins *bits = &_plane[b].row[y & 0xf].column[x];
