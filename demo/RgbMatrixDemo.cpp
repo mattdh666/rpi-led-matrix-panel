@@ -61,21 +61,21 @@ public:
     _matrix->setTextCursor(1, 19);
     _matrix->setFontSize(2); // Medium (4x6) Font
     _matrix->setFontColor(green);
-    _matrix->writeLetter('S');
-    _matrix->writeLetter('i');
-    _matrix->writeLetter('m');
-    _matrix->writeLetter('p');
-    _matrix->writeLetter('l');
-    _matrix->writeLetter('e');
+    _matrix->writeChar('S');
+    _matrix->writeChar('i');
+    _matrix->writeChar('m');
+    _matrix->writeChar('p');
+    _matrix->writeChar('l');
+    _matrix->writeChar('e');
 
     _matrix->setTextCursor(1, 26);
     _matrix->setFontColor(blue);
-    _matrix->writeLetter('S');
-    _matrix->writeLetter('h');
-    _matrix->writeLetter('a');
-    _matrix->writeLetter('p');
-    _matrix->writeLetter('e');
-    _matrix->writeLetter('s');
+    _matrix->writeChar('S');
+    _matrix->writeChar('h');
+    _matrix->writeChar('a');
+    _matrix->writeChar('p');
+    _matrix->writeChar('e');
+    _matrix->writeChar('s');
  }
 
 };
@@ -137,21 +137,21 @@ public:
     _matrix->setTextCursor(1, 19);
     _matrix->setFontSize(2); // Medium (4x6) Font
     _matrix->setFontColor(green);
-    _matrix->writeLetter('F');
-    _matrix->writeLetter('i');
-    _matrix->writeLetter('l');
-    _matrix->writeLetter('l');
-    _matrix->writeLetter('e');
-    _matrix->writeLetter('d');
+    _matrix->writeChar('F');
+    _matrix->writeChar('i');
+    _matrix->writeChar('l');
+    _matrix->writeChar('l');
+    _matrix->writeChar('e');
+    _matrix->writeChar('d');
 
     _matrix->setTextCursor(1, 26);
     _matrix->setFontColor(blue);
-    _matrix->writeLetter('S');
-    _matrix->writeLetter('h');
-    _matrix->writeLetter('a');
-    _matrix->writeLetter('p');
-    _matrix->writeLetter('e');
-    _matrix->writeLetter('s');
+    _matrix->writeChar('S');
+    _matrix->writeChar('h');
+    _matrix->writeChar('a');
+    _matrix->writeChar('p');
+    _matrix->writeChar('e');
+    _matrix->writeChar('s');
   }
 
 };
