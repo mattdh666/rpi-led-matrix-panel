@@ -61,7 +61,10 @@ public:
   // Fade all pixels on the display to black.
   void fadeDisplay();
 
-  // Call this in a loop to keep the matrix updated. 
+  // Fade pixels inside the given rectangle to black.
+  void fadeRect(uint8_t fx, uint8_t fy, uint8_t fw, uint8_t fh);
+
+  // Call this in a loop to keep the matrix updated.
   void updateDisplay();
 
   // Convert an HSV color to an RGB color.

@@ -150,6 +150,41 @@ void RgbMatrix::fadeDisplay()
   }
 }
  
+// Fade whatever is shown inside the given Rectangle. 
+void RgbMatrix::fadeRect(uint8_t fx, uint8_t fy, uint8_t fw, uint8_t fh)
+{
+  uint8_t maxX, maxY;
+  maxX = (fx + fw) > Width ? Width : (fx + fw);
+  maxY = (fy + fh) > Height ? Height : (fy + fh);
+
+  for (int b = PwmBits - 1; b >= 0; b--)
+  {
+    for (int x = fx; x < maxX; x++)
+    {
+      for (int y = fy; y < maxY; y++)
+      {
+        GpioPins *bits = &_plane[b].row[y & 0xf].column[x];
+
+        if (y < 16)
+        {
+          // Upper sub-panel
+	  bits->bits.r1 >>= 1;
+          bits->bits.g1 >>= 1;
+          bits->bits.b1 >>= 1;
+        }
+        else
+        {
+          // Lower sub-panel
+          bits->bits.r2 >>= 1;
+          bits->bits.g2 >>= 1;
+          bits->bits.b2 >>= 1;
+        }
+      }
+    }
+    //TODO: make this dependent on PwmBits (longer sleep for fewer PwmBits).
+    usleep(100000); // 1/10 second
+  }
+}
 
 // Write pixels to the LED panel.
 void RgbMatrix::updateDisplay()
@@ -621,11 +656,34 @@ void RgbMatrix::drawWedge(uint8_t x, uint8_t y, uint8_t r,  //TODO: add inner ra
   uint8_t prevX = x + r * cos(startAngleDeg);
   uint8_t prevY = y + r * sin(startAngleDeg);
 
+  //Special cases to overcome floating point limitations
+  if (startAngle == 90 || startAngle == 270)
+  {
+    prevX = x;
+  }
+  else if (startAngle == 0 || startAngle == 180 || startAngle == 360)
+  {
+    prevY = y;
+  }
+
   drawLine(x, y, prevX, prevY, color);
 
   drawArc(x, y, r, startAngle, endAngle, color);
 
-  drawLine(x + r * cos(endAngleDeg), y + r * sin(endAngleDeg), x, y, color);
+  prevX = x + r * cos(endAngleDeg);
+  prevY =  y + r * sin(endAngleDeg);
+
+  //Special cases to overcome floating point limitations
+  if (endAngle == 90 || endAngle == 270)
+  {
+    prevX = x;
+  }
+  else if (endAngle == 0 || endAngle == 180 || endAngle == 360)
+  {
+    prevY = y;
+  }
+
+  drawLine(prevX, prevY, x, y, color);
 }
 
 
