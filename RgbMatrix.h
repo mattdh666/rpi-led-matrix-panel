@@ -67,11 +67,8 @@ public:
   // Fade pixels inside the given rectangle to black.
   void fadeRect(uint8_t fx, uint8_t fy, uint8_t fw, uint8_t fh);
 
-  // Wipe the pixel down off the screen
+  // Wipe all pixels down off the screen
   void wipeDown();
-
-  // Convert an HSV color to an RGB color.
-  Color ColorHSV(long hue, uint8_t sat, uint8_t val);
 
   //Drawing functions
   void drawPixel(uint8_t x, uint8_t y, Color color);
@@ -175,6 +172,10 @@ public:
   //        = 2 : Medium (4x6)
   //        = 2 : Large  (5x7)
   void putChar(uint8_t x, uint8_t y, unsigned char c, uint8_t size, Color color);
+
+
+  // Convert an HSV color to an RGB color.
+  Color colorHSV(long hue, uint8_t sat, uint8_t val);
 
  
 private:

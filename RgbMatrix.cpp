@@ -256,7 +256,7 @@ void RgbMatrix::fadeRect(uint8_t fx, uint8_t fy, uint8_t fw, uint8_t fh)
 }
 
 
-// Wipe the pixel down off the screen
+// Wipe all pixels down off the screen
 void RgbMatrix::wipeDown()
 {
   for (int frame = 0; frame < Height; frame++)
@@ -319,53 +319,9 @@ void RgbMatrix::wipeDown()
     }
 
     //TODO: make this param and/or dependent on PwmBits (longer sleep for fewer PwmBits).
-    usleep(50000);
+    usleep(25000);
   }
 }
-
-
-//Leave output in 24-bit color (#RRGGBB)
-Color RgbMatrix::ColorHSV(long hue, uint8_t sat, uint8_t val)
-{
-  uint8_t r, g, b, lo;
-  uint16_t s1, v1;
-
-  // Hue
-  hue %= 1536;             // -1535 to +1535
-  if(hue < 0) hue += 1536; //     0 to +1535
-
-  lo = hue & 255;  // Low byte = primary/secondary color mix
-
-  // High byte = sextant of colorwheel
-  switch(hue >> 8)
-  {
-    case 0 : r = 255;      g =  lo     ; b =   0;      break; // R to Y
-    case 1 : r = 255 - lo; g = 255     ; b =   0;      break; // Y to G
-    case 2 : r =   0;      g = 255     ; b =  lo;      break; // G to C
-    case 3 : r =   0;      g = 255 - lo; b = 255;      break; // C to B
-    case 4 : r =  lo;      g =   0     ; b = 255;      break; // B to M
-    default: r = 255;      g =   0     ; b = 255 - lo; break; // M to R
-  }
-
-  // Saturation: add 1 so range is 1 to 256, which allows a bitwise right shift
-  // on the result rather than a costly divide.
-  s1 = sat + 1;
-
-  r  = 255 - (((255 - r) * s1) >> 8);
-  g  = 255 - (((255 - g) * s1) >> 8);
-  b  = 255 - (((255 - b) * s1) >> 8);
-
-  // Value (brightness): Add 1, similar to above.
-  v1 = val + 1;
-
-  Color c;
-  c.red   = (r * v1) >> 8;
-  c.green = (g * v1) >> 8;
-  c.blue  = (b * v1) >> 8;
-
-  return c;
-}
-
 
 
 void RgbMatrix::drawPixel(uint8_t x, uint8_t y, Color color)
@@ -915,7 +871,7 @@ void RgbMatrix::drawColorWheel()
           val = 255;
         }
 
-        color = ColorHSV(hue, sat, val);
+        color = colorHSV(hue, sat, val);
       }
       else
       {
@@ -1041,5 +997,49 @@ void RgbMatrix::putChar(uint8_t x, uint8_t y, unsigned char c, uint8_t size,
     }
   }
 }
+
+
+//Leave output in 24-bit color (#RRGGBB)
+Color RgbMatrix::colorHSV(long hue, uint8_t sat, uint8_t val)
+{
+  uint8_t r, g, b, lo;
+  uint16_t s1, v1;
+
+  // Hue
+  hue %= 1536;             // -1535 to +1535
+  if(hue < 0) hue += 1536; //     0 to +1535
+
+  lo = hue & 255;  // Low byte = primary/secondary color mix
+
+  // High byte = sextant of colorwheel
+  switch(hue >> 8)
+  {
+    case 0 : r = 255;      g =  lo     ; b =   0;      break; // R to Y
+    case 1 : r = 255 - lo; g = 255     ; b =   0;      break; // Y to G
+    case 2 : r =   0;      g = 255     ; b =  lo;      break; // G to C
+    case 3 : r =   0;      g = 255 - lo; b = 255;      break; // C to B
+    case 4 : r =  lo;      g =   0     ; b = 255;      break; // B to M
+    default: r = 255;      g =   0     ; b = 255 - lo; break; // M to R
+  }
+
+  // Saturation: add 1 so range is 1 to 256, which allows a bitwise right shift
+  // on the result rather than a costly divide.
+  s1 = sat + 1;
+
+  r  = 255 - (((255 - r) * s1) >> 8);
+  g  = 255 - (((255 - g) * s1) >> 8);
+  b  = 255 - (((255 - b) * s1) >> 8);
+
+  // Value (brightness): Add 1, similar to above.
+  v1 = val + 1;
+
+  Color c;
+  c.red   = (r * v1) >> 8;
+  c.green = (g * v1) >> 8;
+  c.blue  = (b * v1) >> 8;
+
+  return c;
+}
+
 
 
