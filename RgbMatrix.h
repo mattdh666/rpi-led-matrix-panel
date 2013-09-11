@@ -58,6 +58,9 @@ public:
 
   void clearDisplay();
 
+  // Call this in a loop to keep the matrix updated.
+  void updateDisplay();
+
   // Fade all pixels on the display to black.
   void fadeDisplay();
 
@@ -66,9 +69,6 @@ public:
 
   // Wipe the pixel down off the screen
   void wipeDown();
-
-  // Call this in a loop to keep the matrix updated.
-  void updateDisplay();
 
   // Convert an HSV color to an RGB color.
   Color ColorHSV(long hue, uint8_t sat, uint8_t val);

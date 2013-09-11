@@ -118,6 +118,75 @@ void RgbMatrix::clearDisplay()
 }
 
 
+// Write pixels to the LED panel.
+void RgbMatrix::updateDisplay()
+{
+  GpioPins serialMask;   // Mask of bits we need to set while clocking in.
+  serialMask.bits.r1 = serialMask.bits.g1 = serialMask.bits.b1 = 1;
+  serialMask.bits.r2 = serialMask.bits.g2 = serialMask.bits.b2 = 1;
+  serialMask.bits.clock = 1;
+
+  GpioPins rowMask;
+  rowMask.bits.rowAddress = 0xf;
+
+  GpioPins clock, outputEnable, latch;
+
+  clock.bits.clock = 1;
+  outputEnable.bits.outputEnabled = 1;
+  latch.bits.latch = 1;
+
+  GpioPins rowBits;
+
+  for (uint8_t row = 0; row < RowsPerSubPanel; ++row)
+  {
+    // Rows can't be switched very quickly without ghosting, so we do the
+    // full PWM of one row before switching rows.
+    for (int b = 0; b < PwmBits; b++)
+    {
+      const TwoRows &rowData = _plane[b].row[row];
+
+      // Clock in the row. The time this takes is the smallest time we can
+      // leave the LEDs on, thus the smallest time-constant we can use for
+      // PWM (doubling the sleep time with each bit).
+      // So this is the critical path; I'd love to know if we can employ some
+      // DMA techniques to speed this up.
+      // (With this code, one row roughly takes 3.0 - 3.4usec to clock in).
+      //
+      // However, in particular for longer chaining, it seems we need some more
+      // wait time to settle.
+      const long StabilizeWaitNanos = 0; //TODO: mateo was 256
+
+      for (uint8_t col = 0; col < ColumnCnt; ++col)
+      {
+        const GpioPins &out = rowData.column[col];
+        _gpio->clearBits(~out.raw & serialMask.raw);  // also: resets clock.
+        sleepNanos(StabilizeWaitNanos);
+        _gpio->setBits(out.raw & serialMask.raw);
+        sleepNanos(StabilizeWaitNanos);
+        _gpio->setBits(clock.raw);
+        sleepNanos(StabilizeWaitNanos);
+      }
+
+      _gpio->setBits(outputEnable.raw);  // switch off while strobe (latch).
+
+      rowBits.bits.rowAddress = row;
+      _gpio->setBits(rowBits.raw & rowMask.raw);
+      _gpio->clearBits(~rowBits.raw & rowMask.raw);
+
+      _gpio->setBits(latch.raw);   // strobe - on and off
+      _gpio->clearBits(latch.raw);
+
+      // Now switch on for the given sleep time.
+      _gpio->clearBits(outputEnable.raw);
+
+      // If we use less bits, then use the upper areas which leaves us more
+      // CPU time to do other stuff.
+      sleepNanos(RowSleepNanos[b + (7 - PwmBits)]);
+    }
+  }
+}
+
+
 // Fade whatever is on the display to black.
 void RgbMatrix::fadeDisplay()
 {
@@ -250,76 +319,7 @@ void RgbMatrix::wipeDown()
     }
 
     //TODO: make this param and/or dependent on PwmBits (longer sleep for fewer PwmBits).
-    usleep(80000);
-  }
-}
-
-
-// Write pixels to the LED panel.
-void RgbMatrix::updateDisplay()
-{
-  GpioPins serialMask;   // Mask of bits we need to set while clocking in.
-  serialMask.bits.r1 = serialMask.bits.g1 = serialMask.bits.b1 = 1;
-  serialMask.bits.r2 = serialMask.bits.g2 = serialMask.bits.b2 = 1;
-  serialMask.bits.clock = 1;
-
-  GpioPins rowMask;
-  rowMask.bits.rowAddress = 0xf;
-
-  GpioPins clock, outputEnable, latch;
-
-  clock.bits.clock = 1;
-  outputEnable.bits.outputEnabled = 1;
-  latch.bits.latch = 1;
-
-  GpioPins rowBits;
-
-  for (uint8_t row = 0; row < RowsPerSubPanel; ++row)
-  {
-    // Rows can't be switched very quickly without ghosting, so we do the
-    // full PWM of one row before switching rows.
-    for (int b = 0; b < PwmBits; b++)
-    {
-      const TwoRows &rowData = _plane[b].row[row];
-
-      // Clock in the row. The time this takes is the smallest time we can
-      // leave the LEDs on, thus the smallest time-constant we can use for
-      // PWM (doubling the sleep time with each bit).
-      // So this is the critical path; I'd love to know if we can employ some
-      // DMA techniques to speed this up.
-      // (With this code, one row roughly takes 3.0 - 3.4usec to clock in).
-      //
-      // However, in particular for longer chaining, it seems we need some more
-      // wait time to settle.
-      const long StabilizeWaitNanos = 0; //TODO: mateo was 256
-
-      for (uint8_t col = 0; col < ColumnCnt; ++col)
-      {
-        const GpioPins &out = rowData.column[col];
-        _gpio->clearBits(~out.raw & serialMask.raw);  // also: resets clock.
-        sleepNanos(StabilizeWaitNanos);
-        _gpio->setBits(out.raw & serialMask.raw);
-        sleepNanos(StabilizeWaitNanos);
-        _gpio->setBits(clock.raw);
-        sleepNanos(StabilizeWaitNanos);
-      }
-
-      _gpio->setBits(outputEnable.raw);  // switch off while strobe (latch).
-
-      rowBits.bits.rowAddress = row;
-      _gpio->setBits(rowBits.raw & rowMask.raw);
-      _gpio->clearBits(~rowBits.raw & rowMask.raw);
-
-      _gpio->setBits(latch.raw);   // strobe - on and off
-      _gpio->clearBits(latch.raw);
-
-      // Now switch on for the given sleep time.
-      _gpio->clearBits(outputEnable.raw);
-
-      // If we use less bits, then use the upper areas which leaves us more
-      // CPU time to do other stuff.
-      sleepNanos(RowSleepNanos[b + (7 - PwmBits)]);
-    }
+    usleep(50000);
   }
 }
 
