@@ -181,10 +181,79 @@ void RgbMatrix::fadeRect(uint8_t fx, uint8_t fy, uint8_t fw, uint8_t fh)
         }
       }
     }
-    //TODO: make this dependent on PwmBits (longer sleep for fewer PwmBits).
+    //TODO: make this param and/or dependent on PwmBits (longer sleep for fewer PwmBits).
     usleep(100000); // 1/10 second
   }
 }
+
+
+// Wipe the pixel down off the screen
+void RgbMatrix::wipeDown()
+{
+  for (int frame = 0; frame < Height; frame++)
+  {
+    //Each time through, clear the top row.
+    for (int x = 0; x < Width; x++)
+    {
+      for (int b = PwmBits - 1; b >= 0; b--)
+      {
+        GpioPins *bits = &_plane[b].row[(frame) & 0xf].column[x];
+
+        if (frame < 16)
+        {
+	  // Upper sub-panel
+	  bits->bits.r1 = 0;
+	  bits->bits.g1 = 0;
+	  bits->bits.b1 = 0;
+	}
+	else
+	{
+	  // Lower sub-panel
+	  bits->bits.r2 = 0;
+	  bits->bits.g2 = 0;
+	  bits->bits.b2 = 0;
+	}
+      }
+    }
+
+    for (int y = Height - 1; y > frame; y--)
+    {
+      for (int x = 0; x < Width; x++)
+      {
+	for (int b = PwmBits - 1; b >= 0; b--)
+	{
+	  GpioPins *prevBits = &_plane[b].row[(y-1) & 0xf].column[x];
+	  GpioPins *currBits = &_plane[b].row[y & 0xf].column[x];
+
+          if (y == 16) //Special case when we cross the panels
+          {
+            currBits->bits.r2 = prevBits->bits.r1;
+            currBits->bits.g2 = prevBits->bits.g1;
+            currBits->bits.b2 = prevBits->bits.b1;
+          }
+	  else if (y < 16)
+	  {
+	    // Upper sub-panel
+	    currBits->bits.r1 = prevBits->bits.r1;
+	    currBits->bits.g1 = prevBits->bits.g1;
+	    currBits->bits.b1 = prevBits->bits.b1;
+	  }
+	  else
+	  {
+	    // Lower sub-panel
+	    currBits->bits.r2 = prevBits->bits.r2;
+	    currBits->bits.g2 = prevBits->bits.g2;
+	    currBits->bits.b2 = prevBits->bits.b2;
+	  }
+	}
+      }
+    }
+
+    //TODO: make this param and/or dependent on PwmBits (longer sleep for fewer PwmBits).
+    usleep(80000);
+  }
+}
+
 
 // Write pixels to the LED panel.
 void RgbMatrix::updateDisplay()

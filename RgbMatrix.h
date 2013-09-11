@@ -64,6 +64,9 @@ public:
   // Fade pixels inside the given rectangle to black.
   void fadeRect(uint8_t fx, uint8_t fy, uint8_t fw, uint8_t fh);
 
+  // Wipe the pixel down off the screen
+  void wipeDown();
+
   // Call this in a loop to keep the matrix updated.
   void updateDisplay();
 
