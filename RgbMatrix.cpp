@@ -256,6 +256,50 @@ void RgbMatrix::fadeRect(uint8_t fx, uint8_t fy, uint8_t fw, uint8_t fh)
 }
 
 
+// Call this after drawing on the display and before calling fadeIn().
+void RgbMatrix::setupFadeIn()
+{
+  // Copy the _plane and then set all bits to 0.
+  memcpy(&_fadeInPlane, &_plane, sizeof(_plane));
+  clearDisplay();
+}
+
+
+// Fade in whatever is stored in the _fadeInPlane.
+void RgbMatrix::fadeIn()
+{
+  // Loop over copy of _plane and set bits in actual _plane.
+  for (int b = 0; b < PwmBits; b++)
+  {
+    for (int x = 0; x < Width; x++)
+    {
+      for (int y = 0; y < Height; y++)
+      {
+        GpioPins *fiBits = &_fadeInPlane[b].row[y & 0xf].column[x];
+        GpioPins *bits = &_plane[b].row[y & 0xf].column[x];
+
+        if (y < 16)
+        {
+          // Upper sub-panel
+	  bits->bits.r1 = fiBits->bits.r1;
+          bits->bits.g1 = fiBits->bits.g1;
+          bits->bits.b1 = fiBits->bits.b1;
+        }
+        else
+        {
+          // Lower sub-panel
+          bits->bits.r2 = fiBits->bits.r2;
+          bits->bits.g2 = fiBits->bits.g2;
+          bits->bits.b2 = fiBits->bits.b2;
+        }
+      }
+    }
+    //TODO: make this a param and/or dependent on PwmBits (longer sleep for fewer PwmBits).
+    usleep(100000); // 1/10 second
+  }
+}
+
+
 // Wipe all pixels down off the screen
 void RgbMatrix::wipeDown()
 {

@@ -67,6 +67,15 @@ public:
   // Fade pixels inside the given rectangle to black.
   void fadeRect(uint8_t fx, uint8_t fy, uint8_t fw, uint8_t fh);
 
+  // Call this after drawing on the display and before calling fadeIn().
+  // Before drawing on the display, it's best to first suspend the thread
+  // that is calling updateDisplay(). After calling setupFadeIn(), resume
+  // the suspended thread and call fadeIn().
+  void setupFadeIn();
+
+  // Fade In what has been drawn on the display.
+  void fadeIn();
+
   // Wipe all pixels down off the screen
   void wipeDown();
 
@@ -248,6 +257,7 @@ private:
   };
 
   Display _plane[PwmBits];
+  Display _fadeInPlane[PwmBits]; //2nd plane for hadling fadeIn
 
   // Members for writing text
   uint8_t _textCursorX, _textCursorY;
