@@ -269,19 +269,41 @@ public:
 
     Color black;
 
-    //const int midX = _matrix->Width / 2;
-    //const int midY = _matrix->Height / 2;
+    const int midX = _matrix->Width / 2;
+    const int midY = _matrix->Height / 2;
 
     const float degreesPerRadian = M_PI / 180;
 
-    float rotation = 0; //0, 22.5, 45, 67.5, 90, 135, 180, 225, 270, 315, 360
-    //rotation %= 360;
+    //0 (W)
+    //90 (N)
+    //180 (E)
+    //270 (S)
 
-    //std::cout << "midX, midY: " << midX << ", " << midY << "  rotation (degs): " << rotation << std::endl << std::endl;
+    //22.5, 67.5, 112.5, 135, 157.5, 202.5, 225, 247.5, 292.5, 337.5, 360
+    float rotation = 315;
+
+    int steps = 32;
+    int rotationSubtractX = midX;
+    int rotationSubtractY = midY;
+    int drawLineAddX = midX;
+    int drawLineAddY = midY;
+
+    if (rotation == 45.0)  //NW
+    {
+       steps = 64;
+       drawLineAddX = 0;
+       drawLineAddY = 0;
+    }
+    else if (rotation == 315.0)  //SW
+    {
+       steps = 64;
+       //drawLineAddX = 0;
+       //drawLineAddY = 0;
+    }
 
     while (!isDone())
     {
-      for (int i=0; i < 32 /*64*/; i++)
+      for (int i=0; i < steps; i++)
       {
         int x1 = i;
         int y1 = 0;
@@ -289,10 +311,8 @@ public:
         int y2 = 31;
 
         float rx1, ry1, rx2, ry2;
-        //rotate(x1 - midX, y1 - midY, degreesPerRadian * rotation, &rx1, &ry1);
-        //rotate(x2 - midX, y2 - midY, degreesPerRadian * rotation, &rx2, &ry2);
-        rotate(x1, y1, degreesPerRadian * rotation, &rx1, &ry1);
-        rotate(x2, y2, degreesPerRadian * rotation, &rx2, &ry2);
+        rotate(x1 - rotationSubtractX, y1 - rotationSubtractY, degreesPerRadian * rotation, &rx1, &ry1);
+        rotate(x2 - rotationSubtractX, y2 - rotationSubtractY, degreesPerRadian * rotation, &rx2, &ry2);
 /*
         std::cout << "---------------- i: " << i << " ----------------" << std::endl;
 
@@ -305,6 +325,7 @@ public:
                      "(rx2, ry2):              " << rx2 << ", " << ry2 << std::endl << std::endl;
 */
 
+/*
         //Fade color...
         if (i == 0)
         {
@@ -314,12 +335,11 @@ public:
         {
           color.green = color.green / 1.4;
         }
+*/
 
-        _matrix->drawLine(rx1, ry1, rx2, ry2, color);
-        //_matrix->drawLine(rx1 + midX, ry1 + midY, rx2 + midX, ry2 + midY, color);
+        _matrix->drawLine(rx1 + drawLineAddX, ry1 + drawLineAddY, rx2 + drawLineAddX, ry2 + drawLineAddY, color);
         usleep(60000);
-        _matrix->drawLine(rx1, ry1, rx2, ry2, black);  //clear the line
-        //_matrix->drawLine(rx1 + midX, ry1 + midY, rx2 + midX, ry2 + midY, black);  //clear the line
+        _matrix->drawLine(rx1 + drawLineAddX, ry1 + drawLineAddY, rx2 + drawLineAddX, ry2 + drawLineAddY, black);  //clear the line
       }
     }
   }
