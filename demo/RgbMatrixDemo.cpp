@@ -8,8 +8,12 @@
 #include "Thread.h"
 
 #include <cstdlib>
+#include <iostream>
+#include <math.h>
 #include <stdio.h>
 #include <unistd.h>
+
+#define _USE_MATH_DEFINES
 
 
 // Below are several classes that demo the capabilities of the RgbMatrix class.
@@ -252,6 +256,237 @@ public:
 };
 
 
+//Display an animated Line
+class RgbMatrixAnimatedLine : public RgbMatrixContainer
+{
+public:
+  RgbMatrixAnimatedLine(RgbMatrix *m) : RgbMatrixContainer(m) {}
+
+  void run()
+  {
+    Color color;
+    color.green = 255;
+
+    Color black;
+
+    const int midX = _matrix->Width / 2;
+    const int midY = _matrix->Height / 2;
+
+    const float degreesPerRadian = M_PI / 180;
+
+    int rotation = 45; //315;  //0, 22.5, 45, 67.5, 90
+    rotation %= 360;
+
+    std::cout << "midX, midY: " << midX << ", " << midY << "  rotation (degs): " << rotation << std::endl << std::endl;
+
+    while (!isDone())
+    {
+      for (int i=0; i < 45 /*32*/; i++)
+      {
+        int x1 = i;
+        int y1 = 0;
+        int x2 = i;
+        int y2 = 31;
+
+        float rx1, ry1, rx2, ry2;
+        rotate(x1 - midX, y1 - midY, degreesPerRadian * rotation, &rx1, &ry1);
+        rotate(x2 - midX, y2 - midY, degreesPerRadian * rotation, &rx2, &ry2);
+//        rotate(x1, y1, degreesPerRadian * rotation, &rx1, &ry1);
+//        rotate(x2, y2, degreesPerRadian * rotation, &rx2, &ry2);
+
+        std::cout << "i: " << i << std::endl;
+
+        std::cout << "(x1, y1):                 " << x1 << ", " << y1 << std::endl <<
+                     "(x1 - midX, y1 - midY):   " << (x1 - midX) << ", " << (y1 - midY) << std::endl <<
+                     "(rx1, ry1):               " << rx1 << ", " << ry1 << std::endl <<
+                     "(rx1 + midX, ry1 + midY): " << (rx1 + midX) << ", " << (ry1 + midY) << std::endl << std::endl;
+
+        std::cout << "(x2, y2):                " << x2 << ", " << y2 << std::endl <<
+                     "(x2 - midX, y2 - midY):  " << (x2 - midX) << ", " << (y2 - midY) << std::endl <<
+                     "(rx2, ry2):              " << rx2 << ", " << ry2 << std::endl <<
+                     "(rx2 + midX, ry2 + midY): " << (rx2 + midX) << ", " << (ry2 + midY) << std::endl << std::endl;
+
+
+        //Fade color...
+/*
+        int minX = std::min(rx1, rx2);
+
+        if (i == 0)
+        {
+          color.green = 255;
+        }
+        else if (i > 15 && (i % 2 == 0))
+        {
+          color.green = color.green / 1.2; // >>= 1;
+        }
+*/
+
+        _matrix->drawLine(rx1, ry1, rx2, ry2, color);
+        //_matrix->drawLine(rx1 + midX, ry1 + midY, rx2 + midX, ry2 + midY, color);
+        //_matrix->drawLine(rx1 + (midX/4), ry1 + (midY/4), rx2 + (midX/4), ry2 + (midY/4), color);
+        usleep(1000000); //usleep(60000);
+        _matrix->drawLine(rx1, ry1, rx2, ry2, black);  //clear the line
+        //_matrix->drawLine(rx1 + midX, ry1 + midY, rx2 + midX, ry2 + midY, black);  //clear the line
+        //_matrix->drawLine(rx1 + (midX/4), ry1 + (midY/4), rx2 + (midX/4), ry2 + (midY/4), black); //clear the line
+      }
+
+      usleep(1000000);
+
+    }
+  }
+
+
+private:
+
+  void rotate(int x, int y, float angle, float *new_x, float *new_y)
+  {
+    //TODO: Add cases to handle floating point limitations?
+    *new_x = x * cos(angle) - y * sin(angle);
+    *new_y = x * sin(angle) + y * cos(angle);
+  }
+
+
+};
+
+
+
+
+// Display an animated GIF
+class RgbMatrixAnimatedGif : public RgbMatrixContainer
+{
+public:
+  RgbMatrixAnimatedGif(RgbMatrix *m) : RgbMatrixContainer(m) {}
+
+/*
+  // Simple GIF loader.
+  bool loadGif(const char *filename)
+  {
+    if (_image)
+    {
+      delete [] _image;
+      _image = NULL;
+    }
+
+    FILE *f = fopen(filename, "r");
+    if (f == NULL) return false;
+    char header_buf[256];
+    const char *line = ReadLine(f, header_buf, sizeof(header_buf));
+
+#define EXIT_WITH_MSG(m) { fprintf(stderr, "%s: %s |%s", filename, m, line); \
+     fclose(f); return false; }
+
+    if (sscanf(line, "P6 ") == EOF)
+      EXIT_WITH_MSG("Can only handle P6 as PPM type.");
+
+    line = ReadLine(f, header_buf, sizeof(header_buf));
+
+    if (!line || sscanf(line, "%d %d ", &width_, &height_) != 2)
+      EXIT_WITH_MSG("Width/height expected");
+
+    int value;
+    line = ReadLine(f, header_buf, sizeof(header_buf));
+
+    if (!line || sscanf(line, "%d ", &value) != 1 || value != 255)
+      EXIT_WITH_MSG("Only 255 for maxval allowed.");
+
+    const size_t pixel_count = width_ * height_;
+    _image = new Pixel [ pixel_count ];
+    assert(sizeof(Pixel) == 3);   // we make that assumption.
+
+    if (fread(_image, sizeof(Pixel), pixel_count, f) != pixel_count)
+    {
+      line = "";
+      EXIT_WITH_MSG("Not enough pixels read.");
+    }
+
+#undef EXIT_WITH_MSG
+
+    fclose(f);
+    fprintf(stderr, "Read image with %dx%d\n", width_, height_);
+    _depth = 0;
+    return true;
+  }
+*/
+
+
+
+  void run()
+  {
+    uint32_t count = 0;
+
+    while (!isDone())
+    {
+      count++;
+
+      int color = (count >> 9) % 7; //512 steps for each color (256 up / 256 down)
+      int value = count & 0xFF;
+
+      if (count & 0x100) value = 255 - value; // pulse down
+
+      int r, g, b;
+
+      switch (color)
+      {
+        case 0: r = value; g = b = 0; break;
+        case 1: g = value; r = b = 0; break;
+        case 2: b = value; r = g = 0; break;
+        case 3: r = g = value; b = 0; break;
+        case 4: r = b = value; g = 0; break;
+        case 5: g = b = value; r = 0; break;
+        default: r = g = b = value; break;
+      }
+
+      for (int i=0; i < 32; i++)
+      {
+        Color iColor;
+        iColor.red   = (((i+1) * 8) > r) ? r : 0;
+        iColor.green = (((i+1) * 8) > g) ? g : 0;
+        iColor.blue  = (((i+1) * 8) > b) ? b : 0;
+
+        _matrix->drawRect(0, i, 32, 1, iColor);
+      }
+
+      usleep(2500);
+    }
+  }
+
+
+private:
+  struct Pixel {
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+  };
+
+  // Read line, skip comments.
+  char *readLine(FILE *f, char *buffer, size_t len)
+  {
+    char *result;
+    do 
+    {
+      result = fgets(buffer, len, f);
+    } while (result != NULL && result[0] == '#');
+
+    return result;
+  }
+
+  const Pixel &getPixel(int x, int y) 
+  {
+    static Pixel dummy;
+    if (x < 0 || x > width_ || y < 0 || y > height_) return dummy;
+    return _image[x + width_ * y];
+  }
+
+  int width_;
+  int height_;
+  int _depth;
+
+  Pixel *_image; //array of pixels...
+
+};
+
+
+
 // Draw a color wheel on the matrix. 
 class RgbMatrixColorWheel : public RgbMatrixContainer
 {
@@ -284,8 +519,9 @@ void displayMenu()
   printf("      |      (2) Draw and Fill Shapes                  |\n");
   printf("      |      (3) Pulse All Pixels                      |\n");
   printf("      |      (4) Pulse Pixels with a Gradient          |\n");
-  printf("      |      (5) Draw a Color Wheel                    |\n");
-  printf("      |      (6) Quit                                  |\n");
+  printf("      |      (5) Display an Animated Line              |\n");
+  printf("      |      (6) Draw a Color Wheel                    |\n");
+  printf("      |      (7) Quit                                  |\n");
   printf("      |------------------------------------------------|\n");
   printf("                   Your Choice: ");
 }
@@ -321,7 +557,7 @@ int main(int argc, char *argv[])
 
   char choice = '1';
 
-  while (choice != '6' && choice != 'q' && choice != 'Q')
+  while (choice != '7' && choice != 'q' && choice != 'Q')
   {
     displayMenu();
 
@@ -359,13 +595,21 @@ int main(int argc, char *argv[])
         break;
 
       case '5':
-        display = new RgbMatrixColorWheel(m);
+        display = new RgbMatrixAnimatedLine(m);
+        //display = new RgbMatrixAnimatedGif(m);
         updater = new DisplayUpdater(m);
         printf("\n\nRunning Demo #5.\n\n");
-        runDemo();
+        runDemo();  
         break;
 
       case '6':
+        display = new RgbMatrixColorWheel(m);
+        updater = new DisplayUpdater(m);
+        printf("\n\nRunning Demo #6.\n\n");
+        runDemo();
+        break;
+
+      case '7':
       case 'q':
       case 'Q':
         printf("\n\nHave a nice day!\n\n");
