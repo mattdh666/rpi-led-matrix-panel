@@ -269,19 +269,19 @@ public:
 
     Color black;
 
-    const int midX = _matrix->Width / 2;
-    const int midY = _matrix->Height / 2;
+    //const int midX = _matrix->Width / 2;
+    //const int midY = _matrix->Height / 2;
 
     const float degreesPerRadian = M_PI / 180;
 
-    int rotation = 45; //315;  //0, 22.5, 45, 67.5, 90
-    rotation %= 360;
+    float rotation = 0; //0, 22.5, 45, 67.5, 90, 135, 180, 225, 270, 315, 360
+    //rotation %= 360;
 
-    std::cout << "midX, midY: " << midX << ", " << midY << "  rotation (degs): " << rotation << std::endl << std::endl;
+    //std::cout << "midX, midY: " << midX << ", " << midY << "  rotation (degs): " << rotation << std::endl << std::endl;
 
     while (!isDone())
     {
-      for (int i=0; i < 45 /*32*/; i++)
+      for (int i=0; i < 32 /*64*/; i++)
       {
         int x1 = i;
         int y1 = 0;
@@ -289,49 +289,38 @@ public:
         int y2 = 31;
 
         float rx1, ry1, rx2, ry2;
-        rotate(x1 - midX, y1 - midY, degreesPerRadian * rotation, &rx1, &ry1);
-        rotate(x2 - midX, y2 - midY, degreesPerRadian * rotation, &rx2, &ry2);
-//        rotate(x1, y1, degreesPerRadian * rotation, &rx1, &ry1);
-//        rotate(x2, y2, degreesPerRadian * rotation, &rx2, &ry2);
-
-        std::cout << "i: " << i << std::endl;
+        //rotate(x1 - midX, y1 - midY, degreesPerRadian * rotation, &rx1, &ry1);
+        //rotate(x2 - midX, y2 - midY, degreesPerRadian * rotation, &rx2, &ry2);
+        rotate(x1, y1, degreesPerRadian * rotation, &rx1, &ry1);
+        rotate(x2, y2, degreesPerRadian * rotation, &rx2, &ry2);
+/*
+        std::cout << "---------------- i: " << i << " ----------------" << std::endl;
 
         std::cout << "(x1, y1):                 " << x1 << ", " << y1 << std::endl <<
                      "(x1 - midX, y1 - midY):   " << (x1 - midX) << ", " << (y1 - midY) << std::endl <<
-                     "(rx1, ry1):               " << rx1 << ", " << ry1 << std::endl <<
-                     "(rx1 + midX, ry1 + midY): " << (rx1 + midX) << ", " << (ry1 + midY) << std::endl << std::endl;
+                     "(rx1, ry1):               " << rx1 << ", " << ry1 << std::endl << std::endl;
 
         std::cout << "(x2, y2):                " << x2 << ", " << y2 << std::endl <<
                      "(x2 - midX, y2 - midY):  " << (x2 - midX) << ", " << (y2 - midY) << std::endl <<
-                     "(rx2, ry2):              " << rx2 << ", " << ry2 << std::endl <<
-                     "(rx2 + midX, ry2 + midY): " << (rx2 + midX) << ", " << (ry2 + midY) << std::endl << std::endl;
-
+                     "(rx2, ry2):              " << rx2 << ", " << ry2 << std::endl << std::endl;
+*/
 
         //Fade color...
-/*
-        int minX = std::min(rx1, rx2);
-
         if (i == 0)
         {
           color.green = 255;
         }
         else if (i > 15 && (i % 2 == 0))
         {
-          color.green = color.green / 1.2; // >>= 1;
+          color.green = color.green / 1.4;
         }
-*/
 
         _matrix->drawLine(rx1, ry1, rx2, ry2, color);
         //_matrix->drawLine(rx1 + midX, ry1 + midY, rx2 + midX, ry2 + midY, color);
-        //_matrix->drawLine(rx1 + (midX/4), ry1 + (midY/4), rx2 + (midX/4), ry2 + (midY/4), color);
-        usleep(1000000); //usleep(60000);
+        usleep(60000);
         _matrix->drawLine(rx1, ry1, rx2, ry2, black);  //clear the line
         //_matrix->drawLine(rx1 + midX, ry1 + midY, rx2 + midX, ry2 + midY, black);  //clear the line
-        //_matrix->drawLine(rx1 + (midX/4), ry1 + (midY/4), rx2 + (midX/4), ry2 + (midY/4), black); //clear the line
       }
-
-      usleep(1000000);
-
     }
   }
 
@@ -341,8 +330,11 @@ private:
   void rotate(int x, int y, float angle, float *new_x, float *new_y)
   {
     //TODO: Add cases to handle floating point limitations?
-    *new_x = x * cos(angle) - y * sin(angle);
-    *new_y = x * sin(angle) + y * cos(angle);
+    //Round
+    *new_x = floorf((x * cos(angle) - y * sin(angle)) + 0.5);
+    *new_y = floorf((x * sin(angle) + y * cos(angle)) + 0.5);
+    //*new_x = x * cos(angle) - y * sin(angle);
+    //*new_y = x * sin(angle) + y * cos(angle);
   }
 
 
