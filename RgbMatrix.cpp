@@ -112,12 +112,6 @@ RgbMatrix::RgbMatrix(GpioProxy *io) : _gpio(io)
 }
 
 
-void RgbMatrix::clearDisplay()
-{
-  memset(&_plane, 0, sizeof(_plane));
-}
-
-
 // Write pixels to the LED panel.
 void RgbMatrix::updateDisplay()
 {
@@ -154,7 +148,7 @@ void RgbMatrix::updateDisplay()
       //
       // However, in particular for longer chaining, it seems we need some more
       // wait time to settle.
-      const long StabilizeWaitNanos = 0; //TODO: mateo was 256
+      const long StabilizeWaitNanos = 256; //TODO: mateo was 256
 
       for (uint8_t col = 0; col < ColumnCnt; ++col)
       {
@@ -182,6 +176,48 @@ void RgbMatrix::updateDisplay()
       // If we use less bits, then use the upper areas which leaves us more
       // CPU time to do other stuff.
       sleepNanos(RowSleepNanos[b + (7 - PwmBits)]);
+    }
+  }
+}
+
+
+// Clear the entire display
+void RgbMatrix::clearDisplay()
+{
+  memset(&_plane, 0, sizeof(_plane));
+}
+
+
+// Clear the inside of the given Rectangle. 
+void RgbMatrix::clearRect(uint8_t fx, uint8_t fy, uint8_t fw, uint8_t fh)
+{
+  uint8_t maxX, maxY;
+  maxX = (fx + fw) > Width ? Width : (fx + fw);
+  maxY = (fy + fh) > Height ? Height : (fy + fh);
+
+  for (int b = PwmBits - 1; b >= 0; b--)
+  {
+    for (int x = fx; x < maxX; x++)
+    {
+      for (int y = fy; y < maxY; y++)
+      {
+        GpioPins *bits = &_plane[b].row[y & 0xf].column[x];
+
+        if (y < 16)
+        {
+          // Upper sub-panel
+          bits->bits.r1 = 0;
+          bits->bits.g1 = 0;
+          bits->bits.b1 = 0;
+        }
+        else
+        {
+          // Lower sub-panel
+          bits->bits.r2 = 0;
+          bits->bits.g2 = 0;
+          bits->bits.b2 = 0;
+        }
+      }
     }
   }
 }
@@ -218,6 +254,7 @@ void RgbMatrix::fadeDisplay()
     usleep(100000); // 1/10 second
   }
 }
+
  
 // Fade whatever is shown inside the given Rectangle. 
 void RgbMatrix::fadeRect(uint8_t fx, uint8_t fy, uint8_t fw, uint8_t fh)

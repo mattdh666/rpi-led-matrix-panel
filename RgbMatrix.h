@@ -56,10 +56,14 @@ public:
 
   RgbMatrix(GpioProxy *io);
 
-  void clearDisplay();
-
   // Call this in a loop to keep the matrix updated.
   void updateDisplay();
+
+  // Clear the entire display
+  void clearDisplay();
+
+  // Clear the inside of the given rectangle.
+  void clearRect(uint8_t fx, uint8_t fy, uint8_t fw, uint8_t fh);
 
   // Fade all pixels on the display to black.
   void fadeDisplay();
