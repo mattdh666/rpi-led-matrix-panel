@@ -281,7 +281,7 @@ public:
 
     //TODO: handle all these angles: 
     //      22.5, 67.5, 112.5, 135, 157.5, 202.5, 225, 247.5, 292.5, 337.5, 360
-    float rotation = 22.5;  //315;
+    float rotation = 45.0; //22.5;  //315;
 
     int steps = 32;
     int rotationSubtractX = midX;
