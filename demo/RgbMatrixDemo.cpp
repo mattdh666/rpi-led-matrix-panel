@@ -279,8 +279,9 @@ public:
     //180 (E)
     //270 (S)
 
-    //22.5, 67.5, 112.5, 135, 157.5, 202.5, 225, 247.5, 292.5, 337.5, 360
-    float rotation = 315;
+    //TODO: handle all these angles: 
+    //      22.5, 67.5, 112.5, 135, 157.5, 202.5, 225, 247.5, 292.5, 337.5, 360
+    float rotation = 22.5;  //315;
 
     int steps = 32;
     int rotationSubtractX = midX;
@@ -296,6 +297,8 @@ public:
     }
     else if (rotation == 315.0)  //SW
     {
+      //TODO: make this one look good...
+
        steps = 64;
        //drawLineAddX = 0;
        //drawLineAddY = 0;
