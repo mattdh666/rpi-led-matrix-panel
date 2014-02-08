@@ -304,6 +304,8 @@ public:
        //drawLineAddY = 0;
     }
 
+
+
     while (!isDone())
     {
       for (int i=0; i < steps; i++)
@@ -341,7 +343,10 @@ public:
 */
 
         _matrix->drawLine(rx1 + drawLineAddX, ry1 + drawLineAddY, rx2 + drawLineAddX, ry2 + drawLineAddY, color);
+
+        //TODO: This will determine the speed...
         usleep(60000);
+
         _matrix->drawLine(rx1 + drawLineAddX, ry1 + drawLineAddY, rx2 + drawLineAddX, ry2 + drawLineAddY, black);  //clear the line
       }
     }
