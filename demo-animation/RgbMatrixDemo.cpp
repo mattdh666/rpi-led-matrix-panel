@@ -105,7 +105,6 @@ public:
           color.green = color.green / 1.4;
         }
 */
-
         _matrix->drawLine(rx1 + drawLineAddX, ry1 + drawLineAddY, rx2 + drawLineAddX, ry2 + drawLineAddY, color);
 
         //TODO: This will determine the speed...
@@ -152,25 +151,19 @@ void displayMenu()
   printf("      |------------------------------------------------|\n");
   printf("      |     Select an option from the menu below:      |\n");
   printf("      |------------------------------------------------|\n");
-  printf("      |      (1) West         0/360                    |\n");
-  printf("      |      (2) WNW       22.5                        |\n");
-  printf("      |      (3) NW        45.0                        |\n");
-  printf("      |      (4) NNW       67.5                        |\n");
-  printf("      |      (5) North     90.0                        |\n");
+  printf("      |      (1) North  360/0     90                   |\n");
   printf("      |                                                |\n");
-  printf("      |      (6) South    270.0                        |\n");
-  printf("      |      (7) SSW      292.5                        |\n");
-  printf("      |      (8) SW       315.0                        |\n");
-  printf("      |      (9) WSW      337.5                        |\n");
-/*
-  printf("      |      (6) NNE      112.5                        |\n");
-  printf("      |      (7) NE       135.0                        |\n");
-  printf("      |      (8) ENE      157.5                        |\n");
-  printf("      |      (9) East     180.0                        |\n");
-  printf("      |     (10) ESE      202.5                        |\n");
-  printf("      |     (11) SE       225.0                        |\n");
-  printf("      |     (12) SSE      247.5                        |\n");
-*/
+  printf("      |      (2) NNW    337.5     67.5                 |\n");
+  printf("      |      (3) NW     315.0     45.0                 |\n");
+  printf("      |      (4) WNW    292.5     22.5                 |\n");
+  printf("      |                                                |\n");
+  printf("      |      (5) West   270      360/0                 |\n");
+  printf("      |                                                |\n");
+  printf("      |      (6) WSW    247.5    337.5                 |\n");
+  printf("      |      (7) SW     225.0    315.0                 |\n");
+  printf("      |      (8) SSW    202.5    292.5                 |\n");
+  printf("      |                                                |\n");
+  printf("      |      (9) South  180      270                   |\n");
   printf("      |                                                |\n");
   printf("      |      (0) EXIT                                  |\n");
   printf("      |------------------------------------------------|\n");
@@ -210,6 +203,10 @@ int main(int argc, char *argv[])
 
   while (choice != '0' && choice != 'q' && choice != 'Q')
   {
+    // Clear and refresh the display.
+    m->clearDisplay();
+    m->updateDisplay();
+
     displayMenu();
 
     choice = getchar();
@@ -218,39 +215,39 @@ int main(int argc, char *argv[])
     switch (choice)
     {
       case '1':
-        display = new RgbMatrixAnimatedLine(m, 0);
+        display = new RgbMatrixAnimatedLine(m, 90);
         break;
 
       case '2':
-        display = new RgbMatrixAnimatedLine(m, 22.5);
-        break;
-
-      case '3':
-        display = new RgbMatrixAnimatedLine(m, 45.0);
-        break;
-
-      case '4':
         display = new RgbMatrixAnimatedLine(m, 67.5);
         break;
 
+      case '3':
+        display = new RgbMatrixAnimatedLine(m, 45);
+        break;
+
+      case '4':
+        display = new RgbMatrixAnimatedLine(m, 22.5);
+        break;
+
       case '5':
-        display = new RgbMatrixAnimatedLine(m, 90.0);
+        display = new RgbMatrixAnimatedLine(m, 0);
         break;
 
       case '6':
-        display = new RgbMatrixAnimatedLine(m, 270.0);
+        display = new RgbMatrixAnimatedLine(m, 337.5);
         break;
   
       case '7':
-        display = new RgbMatrixAnimatedLine(m, 292.5);
+        display = new RgbMatrixAnimatedLine(m, 315);
         break;
 
       case '8':
-        display = new RgbMatrixAnimatedLine(m, 315.0);
+        display = new RgbMatrixAnimatedLine(m, 292.5);
         break;
 
       case '9':
-        display = new RgbMatrixAnimatedLine(m, 337.5);
+        display = new RgbMatrixAnimatedLine(m, 270);
         break;
 /*
       case '10':
