@@ -157,6 +157,12 @@ void displayMenu()
   printf("      |      (3) NW        45.0                        |\n");
   printf("      |      (4) NNW       67.5                        |\n");
   printf("      |      (5) North     90.0                        |\n");
+  printf("      |                                                |\n");
+  printf("      |      (6) South    270.0                        |\n");
+  printf("      |      (7) SSW      292.5                        |\n");
+  printf("      |      (8) SW       315.0                        |\n");
+  printf("      |      (9) WSW      337.5                        |\n");
+/*
   printf("      |      (6) NNE      112.5                        |\n");
   printf("      |      (7) NE       135.0                        |\n");
   printf("      |      (8) ENE      157.5                        |\n");
@@ -164,10 +170,7 @@ void displayMenu()
   printf("      |     (10) ESE      202.5                        |\n");
   printf("      |     (11) SE       225.0                        |\n");
   printf("      |     (12) SSE      247.5                        |\n");
-  printf("      |     (13) South    270.0                        |\n");
-  printf("      |     (14) SSW      292.5                        |\n");
-  printf("      |     (15) SW       315.0                        |\n");
-  printf("      |     (16) WSW      337.5                        |\n");
+*/
   printf("      |                                                |\n");
   printf("      |      (0) EXIT                                  |\n");
   printf("      |------------------------------------------------|\n");
@@ -235,19 +238,19 @@ int main(int argc, char *argv[])
         break;
 
       case '6':
-        display = new RgbMatrixAnimatedLine(m, 112.5);
+        display = new RgbMatrixAnimatedLine(m, 270.0);
         break;
   
       case '7':
-        display = new RgbMatrixAnimatedLine(m, 135.0);
+        display = new RgbMatrixAnimatedLine(m, 292.5);
         break;
 
       case '8':
-        display = new RgbMatrixAnimatedLine(m, 157.5);
+        display = new RgbMatrixAnimatedLine(m, 315.0);
         break;
 
       case '9':
-        display = new RgbMatrixAnimatedLine(m, 180.0);
+        display = new RgbMatrixAnimatedLine(m, 337.5);
         break;
 /*
       case '10':
