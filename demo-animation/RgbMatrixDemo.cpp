@@ -21,7 +21,10 @@
 class RgbMatrixAnimatedLine : public RgbMatrixContainer
 {
 public:
-  RgbMatrixAnimatedLine(RgbMatrix *m, float rotation) : RgbMatrixContainer(m) {}
+  RgbMatrixAnimatedLine(RgbMatrix *m, float r) : RgbMatrixContainer(m)
+  {
+    rotation = r;
+  }
 
   void run()
   {
@@ -125,6 +128,8 @@ private:
     //*new_x = x * cos(angle) - y * sin(angle);
     //*new_y = x * sin(angle) + y * cos(angle);
   }
+
+  float rotation;
 
 
 };
