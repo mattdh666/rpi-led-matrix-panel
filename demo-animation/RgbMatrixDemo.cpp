@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
       case '9':
         display = new RgbMatrixAnimatedLine(m, 180.0);
         break;
-
+/*
       case '10':
         display = new RgbMatrixAnimatedLine(m, 202.5);
         break;
@@ -272,7 +272,7 @@ int main(int argc, char *argv[])
       case '16':
         display = new RgbMatrixAnimatedLine(m, 337.5);
         break;
-
+*/
 
       case '0':
       case 'q':
